@@ -69,7 +69,8 @@ public class AnalizadorSintactico {
             boolean existeListaComandosEnRepite = false;
             //Verificamos que el ultimo comando del programa se FIN
             posicionFin = posicionComandoFin();
-             
+            List<MiError> erroresEncontrados = null;
+            List<MiError> erroresEncontrados1 = null;
             while (!nuevaListaTokens.isEmpty()) {
                 System.out.println("*****EL TAMANIO DEL LA LISTA DE NUEVALISTATOKENSS ES " + nuevaListaTokens.size());
                 System.out.println("*****EL TAMANIO DEL LA LISTA DE LISTATOKENS ES " + listaTokens.size() + "\n");
@@ -79,7 +80,13 @@ public class AnalizadorSintactico {
                 System.out.println("wwwwwwwww-AS-EL TIPO DEL TOKENACTUAL ES ES> " + tknActual.getTipo() + "\n");
                 Token tknSigte = new Token();
                 MiError e;
-                List<MiError> erroresEncontrados= new ArrayList<MiError>();
+                if (estamosEnRepite && tknActual.getTipo().equals(Tipos.CORIZQ)) {
+                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS> " + erroresEncontrados.size() + "\n");
+                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS> " + estamosEnRepite + "\n");
+                    erroresEncontrados = erroresEncontrados1;
+                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS> " + erroresEncontrados.size() + "\n");
+                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS> " + estamosEnRepite + "\n");
+                }
                 LineaContenido nuevoContenido;
                 int linea;
                 //DEBO VERIFICAR LA EXISTENCIA DE AMBAS PALABRAS Y EN SUS POSICIONES CORRECTAS
@@ -93,7 +100,7 @@ public class AnalizadorSintactico {
                             case "PARA":
                                 System.out.println("xxxxxxxx-AS-ESTAMOS EN PARA");
                                 //El primer comando debe ser PARA 
-
+                                erroresEncontrados = new ArrayList<MiError>();
                                 linea = tknActual.getLinea();
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea() + "\n");
@@ -131,7 +138,7 @@ public class AnalizadorSintactico {
                                 nuevoContenido = buscarInstruccion(tknActual);
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 existeFin = true;
-
+                                erroresEncontrados = new ArrayList<MiError>();
                                 if (!posicionFin) {
                                     //Si FIN esta en otra linea que no se la ultima programa no esta terminando con FIN
                                     e = new MiError(linea, " ERROR 142: el programa debe finalizar con el comando FIN");
@@ -162,6 +169,7 @@ public class AnalizadorSintactico {
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                                 nuevoContenido = buscarInstruccion(tknActual);
+                                erroresEncontrados = new ArrayList<MiError>();
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 if (!posicionFin) {
                                     e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
@@ -195,7 +203,7 @@ public class AnalizadorSintactico {
                                 linea = tknActual.getLinea();
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-
+                                erroresEncontrados = new ArrayList<MiError>();
                                 nuevoContenido = buscarInstruccion(tknActual);
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 if (!posicionFin) {
@@ -235,6 +243,7 @@ public class AnalizadorSintactico {
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                                 nuevoContenido = buscarInstruccion(tknActual);
+                                erroresEncontrados = new ArrayList<MiError>();
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 if (!posicionFin) {
                                     e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
@@ -269,6 +278,7 @@ public class AnalizadorSintactico {
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                                 nuevoContenido = buscarInstruccion(tknActual);
+                                erroresEncontrados = new ArrayList<MiError>();
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 if (!posicionFin) {
                                     e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
@@ -357,12 +367,13 @@ public class AnalizadorSintactico {
                                 System.out.println("rrrrrrr-AS-EL VALOR DE LINEA ES> " + linea);
                                 System.out.println("rrrrrrr-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                                 nuevoContenido = buscarInstruccion(tknActual);
+                                erroresEncontrados1 = new ArrayList<MiError>();
                                 System.out.println("rrrrrr-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                                 estamosEnRepite = true;
                                 if (!posicionFin) {
                                     e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                    erroresEncontrados1.add(e);
+                                    nuevoContenido.setErroresEncontrados(erroresEncontrados1);
 
                                 } else {
                                     if (!nuevaListaTokens.isEmpty()) {
@@ -380,8 +391,8 @@ public class AnalizadorSintactico {
                                                     existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
                                                     if (!existeVariableDeclarada) {
                                                         e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                                        erroresEncontrados.add(e);
-                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                        erroresEncontrados1.add(e);
+                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                         System.out.println("rrrrrr-AS-HAYAMO UN ERROR1> ");
                                                         System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
                                                         System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
@@ -393,34 +404,34 @@ public class AnalizadorSintactico {
                                                     break;
                                                 case REAL:
                                                     e = new MiError(linea, " ERROR 132: se require un argumento entero");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    erroresEncontrados1.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                     System.out.println("rrrrrr-AS-HAYAMO UN ERROR2> ");
                                                     break;
                                                 case COMANDOHUGO:
                                                 case COMANDOLOGO:
                                                     e = new MiError(linea, " ERROR 145: los comandos solo estan permitidos dentro de los corchetes");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    erroresEncontrados1.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                     System.out.println("rrrrrr-AS-HAYAMO UN ERROR3> ");
                                                     break;
                                                 case DESCONOCIDO:
                                                     e = new MiError(linea, " ERROR 132: se require un argumento entero");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    erroresEncontrados1.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                     System.out.println("rrrrrr-AS-HAYAMO UN ERROR4> ");
                                                     break;
                                                 default:
                                                     e = new MiError(linea, " ERROR 144: falta el entero que indica en numero de repiticiones del comando");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    erroresEncontrados1.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                     System.out.println("rrrrrr-AS-HAYAMO UN ERROR5> ");
                                                     break;
                                             }
                                         } else {
                                             e = new MiError(linea, " ERROR 149: la lista de argumentos esta incompleta");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            erroresEncontrados1.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                             System.out.println("rrrrrr-AS-HAYAMO UN ERROR9> ");
                                             break;
                                         }
@@ -440,16 +451,16 @@ public class AnalizadorSintactico {
                                             } else {
                                                 existeCorIzqEnRepite = false;
                                                 e = new MiError(linea, " ERROR 102: falta corchete izquierdo");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                erroresEncontrados1.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                 System.out.println("rrrrrr-AS-HAYAMO UN ERROR7> ");
 
                                             }
 
                                         } else {
                                             e = new MiError(linea, " ERROR 149: la lista de argumentos esta incompleta");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            erroresEncontrados1.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                             System.out.println("rrrrrr-AS-HAYAMO UN ERROR8> ");
                                             break;
                                         }
@@ -472,16 +483,16 @@ public class AnalizadorSintactico {
                                                 System.out.println("rrrrrr-AS- FINALIZA LISTA DE NUEVALISTATOKENS RESTANTE " + "\n");
                                             } else if (tknSigte.getTipo().equals(Tipos.CORDER)) {
                                                 e = new MiError(linea, " ERROR 149: la lista de argumentos esta incompleta");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                erroresEncontrados1.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                 System.out.println("rrrrrr-AS-HAYAMO UN ERROR9> ");
 
                                             } else if (!tknSigte.getTipo().equals(Tipos.COMANDOHUGO)) {
                                                 System.out.println("rrrrrr-AS-EL VALOR TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE NO COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
                                                 existeCorIzqEnRepite = false;
                                                 e = new MiError(linea, " ERROR 131: la lista de comandos a repetir debe comenzar con un comando valido");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                erroresEncontrados1.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                                 System.out.println("rrrrrr-AS-HAYAMO UN ERROR7> ");
                                                 System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
                                                 System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
@@ -489,8 +500,8 @@ public class AnalizadorSintactico {
 
                                         } else {
                                             e = new MiError(linea, " ERROR 149: la lista de argumentos esta incompleta");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            erroresEncontrados1.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados1);
                                             System.out.println("rrrrrr-AS-HAYAMO UN ERROR9> ");
                                             break;
                                         }
@@ -511,6 +522,7 @@ public class AnalizadorSintactico {
                         System.out.println("iii-AS-EL VALOR DE LINEA ES> " + linea);
                         System.out.println("iii-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                         nuevoContenido = buscarInstruccion(tknActual);
+                        erroresEncontrados = new ArrayList<MiError>();
                         System.out.println("iii-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                         if (!posicionFin) {
                             e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
@@ -546,10 +558,9 @@ public class AnalizadorSintactico {
                         linea = tknActual.getLinea();
                         System.out.println("[[[[[[-AS-EL VALOR DE LINEA ES> " + linea);
                         System.out.println("[[[[[[-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-                      
+
                         nuevoContenido = buscarInstruccion(tknActual);
-                  
-                    
+
                         //System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " +  nuevoContenido.getErroresEncontrados().size();
                         //erroresEncontrados = nuevoContenido.getErroresEncontrados();
                         System.out.println("[[[[[[-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion() + " ubicados en la linea " + linea);
@@ -572,31 +583,28 @@ public class AnalizadorSintactico {
                                         System.out.println("[[[[[-AS-EL VALOR DE EXISTECORDERENREPITE ES -> " + existeCorDerEnRepite);
                                     }
 
-                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 1> " + nuevoContenido.getErroresEncontrados());
-                                        
-                                        
-                                        //nuevoContenido.getErroresEncontrados().forEach( item ->System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + item )); 
-                                       
-                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " +  nuevoContenido.getInstruccion());
-                                        
-                                        //for (int i = 0; i < nuevoContenido.getErroresEncontrados().size(); ++i){
-                                         //   MiError e1 = nuevoContenido.getErroresEncontrados().get(1);
-                                        //    erroresEncontrados.add(e1);
-                                        //}
-                                 
-                                      //List<MiError> myError = new ArrayList<MiError>();
-                                      //myError = nuevoContenido.getErroresEncontrados().subList(0, 1);
-                                      //System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + myError.get(0));
+                                    System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 1> " + nuevoContenido.getErroresEncontrados());
+
+                                    //nuevoContenido.getErroresEncontrados().forEach( item ->System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + item )); 
+                                    System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getInstruccion());
+
+                                    //for (int i = 0; i < nuevoContenido.getErroresEncontrados().size(); ++i){
+                                    //   MiError e1 = nuevoContenido.getErroresEncontrados().get(1);
+                                    //    erroresEncontrados.add(e1);
+                                    //}
+                                    //List<MiError> myError = new ArrayList<MiError>();
+                                    //myError = nuevoContenido.getErroresEncontrados().subList(0, 1);
+                                    //System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + myError.get(0));
                                     if (!existeCorDerEnRepite) {
                                         existeCorDerEnRepite = false;
                                         e = new MiError(linea, " ERROR 103: falta corchete derecho");
                                         erroresEncontrados.add(e);
                                         System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido > " + nuevoContenido.getErroresEncontrados());
-                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 3> " +nuevoContenido.toString());
-                               
+                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 3> " + nuevoContenido.toString());
+
                                         nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                         System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
-                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 4> " + nuevoContenido.getErroresEncontrados().get(0));
+                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 4> " + nuevoContenido.getErroresEncontrados());
                                     }
 
                                 } else {
@@ -617,6 +625,7 @@ public class AnalizadorSintactico {
                         System.out.println("]]]]]]-AS-EL VALOR DE LINEA ES> " + linea);
                         System.out.println("]]]]]]-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
                         nuevoContenido = buscarInstruccion(tknActual);
+                        erroresEncontrados = nuevoContenido.getErroresEncontrados();
                         System.out.println("]]]]]]-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
                         if (!posicionFin) {
                             e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
@@ -675,7 +684,7 @@ public class AnalizadorSintactico {
         List<LineaContenido> contenidoFinal = this.getListaContenidoFinal();
         for (int i = 0; i < contenidoFinal.size(); ++i) {
             if (contenidoFinal.get(i).getLinea() == linea) {
-                nuevo = (LineaContenido)contenidoFinal.get(i);
+                nuevo = (LineaContenido) contenidoFinal.get(i);
                 System.out.println("yyyyyyyyyyyyy-BUSCARINSTRUCIONES-EL VALOR NUEVOCONTENIDO ES> " + nuevo.getInstruccion());
                 break;
             }
@@ -683,22 +692,23 @@ public class AnalizadorSintactico {
         return nuevo;
     }
 
-     public List<MiError> buscarInstruccion2(Token tknActual) {
+    public List<MiError> buscarInstruccion2(Token tknActual) {
 
         int linea = tknActual.getLinea();
         System.out.println("zzzzzzzzzzzzz-BUSCARINSTRUCCIONES-EL VALOR DE LINEA ES> " + linea);
         LineaContenido nuevo = new LineaContenido();
         List<LineaContenido> contenidoFinal = this.getListaContenidoFinal();
-        
+
         for (int i = 0; i < contenidoFinal.size(); ++i) {
             if (contenidoFinal.get(i).getLinea() == linea) {
-                nuevo = (LineaContenido)contenidoFinal.get(i);
+                nuevo = (LineaContenido) contenidoFinal.get(i);
                 System.out.println("yyyyyyyyyyyyy-BUSCARINSTRUCIONES-EL VALOR NUEVOCONTENIDO ES> " + nuevo.getInstruccion());
                 break;
             }
         }
         return nuevo.getErroresEncontrados();
     }
+
     //Funcion para verificar si una variable ya fue declarada previamente
     //Devuelve true si encuentra que la cantidad de tokens con el nombre de la 
     //variable en mayor que 1
