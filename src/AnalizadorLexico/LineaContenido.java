@@ -5,6 +5,7 @@
  */
 package AnalizadorLexico;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,9 +14,9 @@ import java.util.List;
  */
 public class LineaContenido {
 
-    int linea;
-    String instruccion;
-    List<MiError> erroresEncontrados;
+    private int linea;
+    private String instruccion;
+    private List<MiError> erroresEncontrados;
 
     public LineaContenido(int linea, String instruccion, List<MiError> erroresEncontrados) {
         this.linea = linea;
@@ -53,6 +54,12 @@ public class LineaContenido {
     public void setErroresEncontrados(List<MiError> erroresEncontrados) {
         this.erroresEncontrados = erroresEncontrados;
     }
-
+   
+    
+ @Override
+    public String toString() {
+        return "Token:" + this.linea + " " + this.instruccion + " " + this.erroresEncontrados;
+                
+    }
 
 }

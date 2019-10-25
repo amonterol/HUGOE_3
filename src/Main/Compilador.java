@@ -32,7 +32,7 @@ public class Compilador {
 
     public static void main(String[] args) throws IOException {
         
-        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\hexagono9.txt";
+        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\hexagono10.txt";
 
         /*
         (1)

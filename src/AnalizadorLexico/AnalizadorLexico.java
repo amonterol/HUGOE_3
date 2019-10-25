@@ -56,7 +56,6 @@ public class AnalizadorLexico {
         listaContenidoFinal = new ArrayList<>();
 
         //AnalizadorSintactico parser = new AnalizadorSintactico( auxTokens, listaErrores, listaTokens);
-        Comando cmd = new Comando();
         //Color color = new Color();
         Colores colores = new Colores();
         ComandosLogo comandos = new ComandosLogo();
@@ -77,7 +76,7 @@ public class AnalizadorLexico {
             // System.out.println("SEGUIMOS EN EL WHILE");
             nuevaLinea = iter.next();
             ++linea;
-            System.out.println("\n" + "222222-ESTA ES LA NUEVA EXPRESION DEL  ANALISIS LEXICO " + "[ " + nuevaLinea + " ]" + " EN LA POSICION " + "[ " + linea + " ]" + "\n");
+            System.out.println("\n" + "222222-ESTA ES LA NUEVA EXPRESION DEL  ANALISIS LEXICO-> " + nuevaLinea + " EN LA POSICION " + linea + "\n");
 
             if (nuevaLinea.startsWith(";")) {
                 //System.out.println("Linea de comentario " + nuevaLinea);
@@ -95,9 +94,9 @@ public class AnalizadorLexico {
 
                 //Ajustamos corchetes del comando Repetir para evitar situaciones como "4[AV"  o "id]" o "entero]"
                 if (nuevaLinea.startsWith("REPITE")) {
-                System.out.println("#####33333-LINEA QUE INICIA CON REPITE ->" + nuevaLinea);   
+                    System.out.println("#####33333-LINEA QUE INICIA CON REPITE ->" + nuevaLinea);
                     nuevaLinea = ajustesLineaRepite(nuevaLinea);
-                System.out.println("#####33333-LINEA QUE INICIA CON REPITE ->" + nuevaLinea); 
+                    System.out.println("#####33333-LINEA QUE INICIA CON REPITE DESPUES DE AJUSES ->" + nuevaLinea);
                 }
                 //Cada linea del archivo fuente es separada en lexemas para clasificar cada uno en tokens
                 String[] lexemas;
@@ -428,8 +427,7 @@ public class AnalizadorLexico {
         } catch (NullPointerException e) {
             System.out.println("NullPointerException Caught en recorrerArchivo linea 102");
         }
-        //System.out.println("\n " + "\n" + "ESTA ES LA NUEVA LISTA despues de eliminarCaracteresRedundates> ");
-        //imprimirArchivoSalida(nuevaLista);
+
         return nuevaLista;
 
     }
@@ -586,52 +584,62 @@ public class AnalizadorLexico {
 
     public String ajustesLineaRepite(String str) {
         String lexema = " ";
-        
-            char caracterAnterior;
-            char caracterActual;
 
-            for (int x = 0; x < str.length(); x++) {
-                caracterActual = str.charAt(x);
-                switch (caracterActual) {
-                   
-                    case '[':
-                        if (x != 0) {
-                            caracterAnterior = str.charAt(x - 1);
-                            char caracterSiguiente = str.charAt(x + 1);
+        char caracterAnterior;
+        char caracterActual;
 
-                            if (caracterAnterior == ' ' && caracterSiguiente == ' ') {
-                                lexema += caracterActual;
-                            } else if (caracterAnterior == ' ' && caracterSiguiente != ' ') {
-                                lexema += caracterActual;
-                                lexema += " ";
-                            } else if (caracterAnterior != ' ' && caracterSiguiente == ' ') {
-                                lexema += " ";
-                                lexema += caracterActual;
-                            } else if (caracterAnterior != ' ' && caracterSiguiente != ' ') {
-                                lexema += " ";
-                                lexema += caracterActual;
-                                lexema += " ";
-                            }
+        for (int x = 0; x < str.length(); x++) {
+            caracterActual = str.charAt(x);
+            switch (caracterActual) {
+
+                case '[':
+                    if (x == str.length() - 1) {
+                        caracterAnterior = str.charAt(x - 1);
+                        if (caracterAnterior != ' ') {
+                            lexema += " ";
+                            lexema += caracterActual;
                         }
                         break;
-                    case ']':
+                    }
+                    if (x != 0) {
+                        caracterAnterior = str.charAt(x - 1);
+                        char caracterSiguiente = str.charAt(x + 1);
 
-                        if (x != 0) {
-                            caracterAnterior = str.charAt(x - 1);
-                            if (caracterAnterior == ' ') {
-                                lexema += caracterActual;
-                            } else {
-                                lexema += " ";
-                                lexema += caracterActual;
-                            }
+                        if (caracterAnterior == ' ' && caracterSiguiente == ' ') {
+                            lexema += caracterActual;
+                        } else if (caracterAnterior == ' ' && caracterSiguiente != ' ') {
+                            lexema += caracterActual;
+                            lexema += " ";
+                        } else if (caracterAnterior != ' ' && caracterSiguiente == ' ') {
+                            lexema += " ";
+                            lexema += caracterActual;
+                        } else if (caracterAnterior != ' ' && caracterSiguiente != ' ') {
+                            lexema += " ";
+                            lexema += caracterActual;
+                            lexema += " ";
                         }
-                        break;
-                    default:
-                        lexema += caracterActual;
-                        break;
-                }
+                    }
+                    break;
+                case ']':
+
+                    if (x != 0) {
+                        caracterAnterior = str.charAt(x - 1);
+                        if (caracterAnterior == ' ') {
+                            lexema += caracterActual;
+                        } else if( caracterAnterior == '['){
+                            lexema += caracterActual;
+                        }else {
+                            lexema += " ";
+                            lexema += caracterActual;
+                        }
+                    }
+                    break;
+                default:
+                    lexema += caracterActual;
+                    break;
             }
-       
+        }
+
         return lexema.trim();
     }
 

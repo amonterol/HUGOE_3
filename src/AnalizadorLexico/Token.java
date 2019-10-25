@@ -62,6 +62,10 @@ public class Token {
     public void setPosicion(int posicion) {
         this.posicion = posicion;
     }
-
+    @Override
+    public String toString() {
+        return "Token:" + this.nombre + " " + this.tipo + " " +
+                + this.linea + " " + this.posicion;
+    }
    
 }
