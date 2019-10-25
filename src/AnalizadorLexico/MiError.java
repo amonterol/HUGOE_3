@@ -78,7 +78,8 @@ public class MiError {
         " ERROR 146: se requiere una lista de comandos validos",
         " ERROR 147: esta version solo acepta corchetes en el comando REPITE",
         " ERROR 148: se require una lista de argumentos para este comando",
-        " ERROR 149: la lista de argumentos esta incompleta"
+        " ERROR 149: la lista de argumentos esta incompleta",
+        " ERROR 150: la lista de comandos de REPITE no debe contener el comando HAZ"
         
 
     };
