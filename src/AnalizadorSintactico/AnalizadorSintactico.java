@@ -560,8 +560,429 @@ public class AnalizadorSintactico {
 
                             default:
                                 break;
-                        }
+                        } //fin del switch dentro del case COMANDOHUGO
                         break;
+
+                    // fin case  COMANDOHUGO
+                    case "COMANDOLOGO":
+                        switch (tknActual.getNombre()) {
+                            case "ABIERTOS":
+                            case "ABRE":
+                            case "ABREACTUALIZAR":
+                            case "ABREDIALOGO":
+                            case "ABREMIDI":
+                            case "ABREPUERTO":
+                            case "AC":
+                            case "ACTIVA":
+                            case "ACTIVAVENTANA":
+                            case "ACTUALIZABOTON":
+                            case "ACTUALIZAESTATICO":
+                            case "AJUSTA":
+                            case "ALTO":
+                            case "ANALIZA":
+                            case "ANTERIOR":
+                            case "ANTES":
+                            case "APLICA":
+                            case "ARCCOS":
+                            case "ARCODEELIPSE":
+                            case "ARCSEN":
+                            case "ARCTAN":
+                            case "AREAACTIVA":
+                            case "ARREGLO":
+                            case "ASCII":
+                            case "ATRAPA":
+                            case "ATRAS":
+                            case "AYUDA":
+                            case "AYUDADEWINDOWS":
+                            case "AZAR":
+                            case "AÑADECADENALISTBOX":
+                            case "AÑADELINEACOMBOBOX":
+                            case "BA":
+                            case "BAJAN":
+                            case "BAJANARIZ":
+                            case "BAL":
+                            case "BALANCEA":
+                            case "BALANCEAIZQUIERDA":
+                            case "BALANCEO":
+                            case "BARRERA":
+                            case "BITINVERSO":
+                            case "BITO":
+                            case "BITXOR":
+                            case "BITY":
+                            case "BO":
+                            case "BOARCHIVO":
+                            case "BORRA ":
+                            case "BORRABARRADESPLAZAMIENTO":
+                            case "BORRABOTON":
+                            case "BORRABOTONRADIO":
+                            case "BORRACADENALISTBOX":
+                            case "BORRACHECKBOX":
+                            case "BORRACOMBOBOX":
+                            case "BORRADIALOGO":
+                            case "BORRADIR":
+                            case "BORRAESTATICO":
+                            case "BORRAGROUPBOX":
+                            case "BORRALINEACOMBOBOX":
+                            case "BORRALISTBOX":
+                            case "BORRAPALETA":
+                            case "BORRAPANTALLA":
+                            case "BORRAR":
+                            case "BORRARARCHIVO":
+                            case "BORRATEXTO":
+                            case "BORRAVENTANA":
+                            case "BOTON":
+                            case "BT":
+                            case "CABECEA":
+                            case "CABECEO":
+                            case "CAI":
+                            case "CAMBIADIRECTORIO":
+                            case "CAMBIASIGNO":
+                            case "CAR":
+                            case "CARACTER":
+                            case "CARGA":
+                            case "CARGADIB":
+                            case "CARGADIBTAMAÑO":
+                            case "CARGADLL":
+                            case "CARGAGIF":
+                            case "CD":
+                            case "CERCA":
+                            case "CIERRA":
+                            case "CIERRAMIDI":
+                            case "CIERRAPUERTO":
+                            case "CL":
+                            case "CO":
+                            case "COGE":
+                            case "COLORLAPIZ":
+                            case "COLORPAPEL":
+                            case "COLORRELLENO":
+                            case "COMODEVUELVE":
+                            case "CONTADORACERO":
+                            case "CONTENIDO":
+                            case "CONTINUA":
+                            case "COPIAAREA":
+                            case "COPIADEF":
+                            case "CORTAAREA":
+                            case "CREABARRADESPLAZAMIENTO":
+                            case "CREABOTON":
+                            case "CREABOTONRADIO":
+                            case "CREACHECKBOX":
+                            case "CREACOMBOBOX":
+                            case "CREADIALOGO":
+                            case "CREADIR":
+                            case "CREADIRECTORIO":
+                            case "CREAESTATICO":
+                            case "CREAGROUPBOX":
+                            case "CREALISTBOX":
+                            case "CREAVENTANA":
+                            case "CS":
+                            case "CUENTA":
+                            case "CUENTAREPITE":
+                            case "CURSOR":
+                            case "DEFINE":
+                            case "DEFINEMACRO":
+                            case "DEFINIDO":
+                            case "DEFINIDOP":
+                            case "DESPLAZA":
+                            case "DESPLAZAIZQUIERDA":
+                            case "DESPLAZAX":
+                            case "DESPLAZAY":
+                            case "DESTAPA":
+                            case "DEV":
+                            case "DEVUELVE":
+                            case "DIFERENCIA":
+                            case "DIRECTORIO":
+                            case "DIRECTORIOPADRE":
+                            case "DIRECTORIOS":
+                            case "DIVISION":
+                            case "ED":
+                            case "EDITA":
+                            case "EDITAFICHERO":
+                            case "EJECUTA":
+                            case "EJECUTAANALIZA":
+                            case "ELEMENTO":
+                            case "EMPIEZAPOLIGONO":
+                            case "ENCADENA":
+                            case "ENTERO":
+                            case "ENVIA":
+                            case "ENVIAVALORRED":
+                            case "ENVOLVER":
+                            case "ERROR":
+                            case "ESCRIBE":
+                            case "ESCRIBEBOTONRADIO":
+                            case "ESCRIBECADENAPUERTO":
+                            case "ESCRIBECARACTERPUERTO":
+                            case "ESCRIBEPUERTO":
+                            case "ESCRIBEPUERTO2":
+                            case "ESCRIBERED":
+                            case "ESCRIBIRARCHIVO":
+                            case "ESCRITURA":
+                            case "ESPERA":
+                            case "ESTADO":
+                            case "ESTADOCHECKBOX":
+                            case "EXCLUSIVO":
+                            case "EXP":
+                            case "FINLEC":
+                            case "FINRED":
+                            case "FORMATONUMERO":
+                            case "FR":
+                            case "FRASE":
+                            case "GOTEAR":
+                            case "GROSOR":
+                            case "GUARDA":
+                            case "GUARDADIALOGO":
+                            case "GUARDADIB":
+                            case "GUARDAGIF":
+                            case "HABILITABOTON":
+                            case "HABILITACHECKBOX":
+                            case "HABILITACOMBOBOX":
+                            case "HACIA":
+                            case "HACIAXYZ":
+                            case "HORA":
+                            case "HORAMILI":
+                            case "IG":
+                            case "IGUAL":
+                            case "IGUALES":
+                            case "ILA":
+                            case "IM":
+                            case "IMPROP":
+                            case "IMTS":
+                            case "IMTSP":
+                            case "INDICEIMAGEN":
+                            case "INICIARED":
+                            case "INVERSOLAPIZ":
+                            case "IZ":
+                            case "IZQUIERDA":
+                            case "LAPIZ":
+                            case "LC":
+                            case "LCS":
+                            case "LECTURA":
+                            case "LEEBARRADESPLAZAMIENTO":
+                            case "LEEBOTONRADIO":
+                            case "LEECADENAPUERTO":
+                            case "LEECAR":
+                            case "LEECARACTERPUERTO":
+                            case "LEECARC":
+                            case "LEECARCS":
+                            case "LEEFOCO":
+                            case "LEELISTA":
+                            case "LEEPALABRA":
+                            case "LEEPUERTO":
+                            case "LEEPUERTO2":
+                            case "LEEPUERTOJUEGOS":
+                            case "LEERED":
+                            case "LEESELECCIONLISTBOX":
+                            case "LEETECLA":
+                            case "LEETEXTOCOMBOBOX":
+                            case "LEEVALORRED":
+                            case "LIMPIA":
+                            case "LIMPIAPUERTO":
+                            case "LISTA":
+                            case "LISTAARCH":
+                            case "LL":
+                            case "LLAMADLL":
+                            case "LN":
+                            case "LOCAL":
+                            case "LOG":
+                            case "LPROP":
+                            case "LR":
+                            case "LUZ":
+                            case "LVARS":
+                            case "MACRO":
+                            case "MATRIZ":
+                            case "MAYOR":
+                            case "MAYORQUE":
+                            case "MAYUSCULAS":
+                            case "MCI":
+                            case "MENOR":
+                            case "MENORQUE":
+                            case "MENOS":
+                            case "MENOSPRIMERO":
+                            case "MENOSPRIMEROS":
+                            case "MENSAJE":
+                            case "MENSAJEMIDI":
+                            case "MIEMBRO":
+                            case "MINUSCULAS":
+                            case "MODOBITMAP":
+                            case "MODOPUERTO":
+                            case "MODOTORTUGA":
+                            case "MODOVENTANA":
+                            case "MODULO":
+                            case "MP":
+                            case "MPR":
+                            case "MPS":
+                            case "MU":
+                            case "MUESTRA":
+                            case "MUESTRAPOLIGONO":
+                            case "MUESTRAT":
+                            case "MUESTRATORTUGA":
+                            case "NO":
+                            case "NODOS":
+                            case "NOESTADO":
+                            case "NOEXCLUSIVO":
+                            case "NOGOTEAR":
+                            case "NOMBRE":
+                            case "NOMBRES":
+                            case "NOPAS":
+                            case "NORED":
+                            case "NOTRAZA":
+                            case "NUMERO":
+                            case "O":
+                            case "PALABRA":
+                            case "PARADA":
+                            case "PASO":
+                            case "PATRONLAPIZ":
+                            case "PAUSA":
+                            case "PEGA":
+                            case "PEGAENINDICE":
+                            case "PERSPECTIVA":
+                            case "PFT":
+                            case "PINTACOLOR":
+                            case "PIXEL":
+                            case "PLA":
+                            case "POCCR":
+                            case "PONAREAACTIVA":
+                            case "PONBALANCEO":
+                            case "PONBARRADESPLAZAMIENTO":
+                            case "PONCABECEO":
+                            case "PONCHECKBOX":
+                            case "PONCLIP":
+                            case "PONCOLORPAPEL":
+                            case "PONCONTADOR":
+                            case "PONCP":
+                            case "PONCURSORESPERA":
+                            case "PONCURSORNOESPERA":
+                            case "PONELEMENTO":
+                            case "PONESCRITURA":
+                            case "PONF":
+                            case "PONFOCO":
+                            case "PONFONDO":
+                            case "PONFORMATORTUGA":
+                            case "PONG":
+                            case "PONGROSOR":
+                            case "PONINDICEBIT":
+                            case "PONLECTURA":
+                            case "PONLUPA":
+                            case "PONLUZ":
+                            case "PONMARGENES":
+                            case "PONMODOBIT":
+                            case "PONMODOTORTUGA":
+                            case "PONMP":
+                            case "PONPATRONLAPIZ":
+                            case "PONPIXEL":
+                            case "PONPOS":
+                            case "PONPOSESCRITURA":
+                            case "PONPOSLECTURA":
+                            case "PONPRIMERO":
+                            case "PONPROP":
+                            case "PONR":
+                            case "PONRATON":
+                            case "PONRED":
+                            case "PONRONZAL":
+                            case "PONRUMBO":
+                            case "PONTAMAÑOTIPO":
+                            case "PONTECLADO":
+                            case "PONTEXTOCOMBOBOX":
+                            case "PONULTIMO":
+                            case "PONX":
+                            case "PONXY":
+                            case "PONXYZ":
+                            case "PONY":
+                            case "PONZ":
+                            case "POS":
+                            case "POS3D":
+                            case "POSICIONATE":
+                            case "POSLECTURA":
+                            case "POSRATON":
+                            case "POTENCIA":
+                            case "PP":
+                            case "PPR":
+                            case "PREGUNTABOX":
+                            case "PRI":
+                            case "PRIMERO":
+                            case "PRIMEROS":
+                            case "PRIMITIVA":
+                            case "PRODUCTO":
+                            case "PROP":
+                            case "PROPIEDAD":
+                            case "PRUEBA":
+                            case "PTT":
+                            case "PUL":
+                            case "QUITADIBUJOTORTUGA":
+                            case "QUITADLL":
+                            case "QUITAESTADO":
+                            case "QUITARED":
+                            case "QUITARRATON":
+                            case "QUITATECLADO":
+                            case "RADARCCOS":
+                            case "RADARCSEN":
+                            case "RADARCTAN":
+                            case "RADCOS":
+                            case "RADSEN":
+                            case "RADTAN":
+                            case "RAIZCUADRADA":
+                            case "RC":
+                            case "REAZAR":
+                            case "RECTANGULORRELLENO":
+                            case "REDONDEA":
+                            case "RESTO":
+                            case "RESULTADOEJECUTA":
+                            case "RO":
+                            case "RONZAL":
+                            case "ROTULA":
+                            case "RUMBO":
+                            case "SELECCIONBOX":
+                            case "SEN":
+                            case "SHELL":
+                            case "SI":
+                            case "SIC":
+                            case "SICIERTO":
+                            case "SIEMPRE":
+                            case "SIEVENTO":
+                            case "SIF":
+                            case "SIFALSO":
+                            case "SINOBOX":
+                            case "SIRED":
+                            case "SISINO":
+                            case "SISTEMA":
+                            case "SIVERDADERO":
+                            case "STANDOUT":
+                            case "SUENAWAVE":
+                            case "SUMA":
+                            case "TAMAÑODECORADO":
+                            case "TAMAÑODIBUJO":
+                            case "TAMAÑOGIF":
+                            case "TAMAÑOTIPO":
+                            case "TAN":
+                            case "TAPA":
+                            case "TAPADO":
+                            case "TAPANOMBRE":
+                            case "TECLA":
+                            case "TERMINAPOLIGONO":
+                            case "TEXTO":
+                            case "TIENEBARRA":
+                            case "TIPO":
+                            case "TONO":
+                            case "TORTUGA":
+                            case "TORTUGAS":
+                            case "TRAZA":
+                            case "UL":
+                            case "ULTIMO":
+                            case "UNSTE":
+                            case "VACIA":
+                            case "VACIO":
+                            case "VALOR":
+                            case "VAR":
+                            case "VENTANADEPURADOR":
+                            case "VIRA":
+                            case "VISIBLE":
+                            case "Y":
+                                System.out.println("gigigi-AS-ESTAMOS EN GIRADERECHA ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO");
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getInstruccion());
+                                nuevoContenido = casoInstruccionSoloValidaEnLogo(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin);
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido);
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getErroresEncontrados());
+                                break;
+                        } //SWITCH COMANDOLOGO
 
                     case "ENTERO":
                         System.out.println("[eeeeee-AS-ESTAMOS EN ENTERO->> " + tknActual.toString());
@@ -1098,6 +1519,52 @@ public class AnalizadorSintactico {
                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                     System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR5 o> " + e.toString());
                     System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR6 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                }
+            }
+        }
+        return nuevoContenido;
+    }
+
+    public LineaContenido casoInstruccionSoloValidaEnLogo(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin) {
+
+        System.out.println("comandosLogo-AS-ESTAMOS DENTRO FUNCION casoInstruccionSoloValidaEnLogo con el token->" + tknActual.toString());
+        //Token siguiente esperado = NINGUNO
+
+        int linea = tknActual.getLinea();
+
+        System.out.println("comandosLogo-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("comandosLogo-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+        //erroresEncontrados = new ArrayList<MiError>();
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        System.out.println("comandosLogo-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                //Token siguiente esperado -> NINGUNO 
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("comandosLogo-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                System.out.println("comandosLogo-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                //Revisamos si sigamos en la misma linea
+                if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                    //Encontramos un comando solo valido en logo
+                    System.out.println("comandosLogo-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                    e = new MiError(linea, " Advertencia: instrucción " + tknActual.getNombre() + " no es soportada por esta versión");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    System.out.println("comandosLogo-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                    System.out.println("v-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
                 }
             }
         }
