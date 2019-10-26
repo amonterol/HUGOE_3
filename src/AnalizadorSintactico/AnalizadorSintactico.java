@@ -70,43 +70,49 @@ public class AnalizadorSintactico {
             boolean existeListaComandosEnRepite = false;
             //Verificamos que el ultimo comando del programa se FIN
             posicionFin = posicionComandoFin();
-            List<MiError> erroresEncontrados = null;
-            List<MiError> erroresEncontradosEnRepite = null;
+            List<MiError> erroresEncontrados = new ArrayList<>();
+            List<MiError> erroresEncontradosEnRepite = new ArrayList<>();
+            int linea = 0;
+            MiError e;
+            LineaContenido nuevoContenido = null;
             while (!nuevaListaTokens.isEmpty()) {
-                System.out.println("*****EL TAMANIO DEL LA LISTA DE NUEVALISTATOKENSS ES " + nuevaListaTokens.size());
-                System.out.println("*****EL TAMANIO DEL LA LISTA DE LISTATOKENS ES " + listaTokens.size() + "\n");
+                System.out.println("\n" + "\n" + "\n" + "******EL TAMANIO DEL LA LISTA DE NUEVALISTATOKENSS ES " + nuevaListaTokens.size());
+                System.out.println("******EL TAMANIO DEL LA LISTA DE LISTATOKENS ES " + listaTokens.size() + "\n");
                 //Removemos el primer token de la lista para aplicar tecnica FIFO -> ¿sera mejor usar una cola?
+
                 Token tknActual = nuevaListaTokens.remove(0);
-                System.out.println("wwwwwwwww-AS-EL VALOR TOKENACTUAL ES ES> " + tknActual.getNombre());
-                System.out.println("wwwwwwwww-AS-EL TIPO DEL TOKENACTUAL ES ES> " + tknActual.getTipo() + "\n");
+
+                System.out.println("******-AS-TENEMOS UN NUEVO TOKEN ACTUAL SU NOMBR ES -> " + tknActual.getNombre());
+                System.out.println("******-AS-EL TIPO DEL TOKENACTUAL ES ES> " + tknActual.getTipo() + "\n");
+
                 Token tknSigte = new Token();
-                MiError e;
-                LineaContenido nuevoContenido;
-                int linea;
+
+                System.out.println("*******-AS- EL VALOR DE estamosEnRepite es->S> " + estamosEnRepite);
+
                 if (tknActual.getNombre().equals("REPITE")) {
                     lineaTknRepite = tknActual.getLinea();
                 }
+
+                System.out.println("*******-AS- EL VALOR DE estamosEnRepite es->S> " + estamosEnRepite + "\n");
+
                 estamosEnRepite = tknActual.getLinea() == lineaTknRepite;
+
                 if (estamosEnRepite) {
                     erroresEncontrados = erroresEncontradosEnRepite;
+
+                    System.out.println("*******-AS- ERRORES ENCONTRADOS EN IF estamosEnRepite es->S> " + erroresEncontrados + "\n");
+
                 } else {
                     erroresEncontrados = new ArrayList<>();
+
+                    System.out.println("*******-AS- ERRORES ENCONTRADOS EN ELSE estamosEnRepite es->S> " + erroresEncontrados + "\n");
                 }
 
-                /*
-                if (estamosEnRepite && tknActual.getTipo().equals(Tipos.CORIZQ)) {
-                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS DENTRO DEL IF DE ESTAMOS EN REPITE> " + erroresEncontrados.size() + "\n");
-                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS DENTRO DEL IF DE ESTAMOS EN REPITE> " + estamosEnRepite + "\n");
-                    erroresEncontrados = erroresEncontradosEnRepite;
-                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS DENTRO DEL IF DE ESTAMOS EN REPITE> " + erroresEncontrados.size() + "\n");
-                    System.out.println("wwwwwwwww-AS-ERROES ENCONTRADOSS DENTRO DEL IF DE ESTAMOS EN REPITE> " + estamosEnRepite + "\n");
-                }
-                 */
                 //DEBO VERIFICAR LA EXISTENCIA DE AMBAS PALABRAS Y EN SUS POSICIONES CORRECTAS
                 switch (tknActual.getTipo().toString().trim()) {
 
                     case "COMANDOHUGO":
-                        System.out.println("vvvvvvvvvv-AS-ENTRAMOS A CASE OF COMANDO> " + tknActual.getNombre());
+                        System.out.println("\n" + "\n" + "ssssss-AS-ENTRAMOS A CASE OF COMANDO> " + tknActual.getNombre());
                         OUTER:
                         switch (tknActual.getNombre()) {
                             case "PARA":
@@ -171,143 +177,39 @@ public class AnalizadorSintactico {
                                         System.out.println("zzzzzzzzzzzzz-AS-SE ENCONTRO UN ERROR> " + e.getError());
                                     }
                                 }
-
                                 break;
+
                             case "AVANZA":
                             case "AV":
-                                System.out.println("xxxxxxxx-AS-ESTAMOS EN AVANZA");
-                                //Token siguiente esperado debe ser tipo IDENTIFICADOR 
-                                linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-                                nuevoContenido = buscarInstruccion(tknActual);
-                                //erroresEncontrados = new ArrayList<MiError>();
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                                /*
-                                if (!estamosEnRepite) {
-                                    erroresEncontrados = new ArrayList<MiError>();
-                                }
-                                 */
-                                if (!posicionFin) {
-                                    e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-
-                                } else {
-                                    if (!nuevaListaTokens.isEmpty()) {
-
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                if (!tknActual.getTipo().equals(Tipos.ENTERO)) {
-                                                    e = new MiError(linea, "Error 111: Se espera un numero entero");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                }
-                                            }
-                                        } else {
-                                            e = new MiError(linea, " Error 112: Se necesita un argumento entero para esta funcion");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                        }
-                                    }
-                                }
-                                break;
                             case "GIRADERECHA":
                             case "GD":
-                                System.out.println("xxxxxxxx-AS-ESTAMOS EN GIRADERECHA");
-                                //Token siguiente esperado debe ser tipo IDENTIFICADOR 
-                                linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-                                //erroresEncontrados = new ArrayList<MiError>();
-                                nuevoContenido = buscarInstruccion(tknActual);
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                                /*
-                                if (!estamosEnRepite) {
-                                    erroresEncontrados = new ArrayList<MiError>();
-                                }
-                                 */
-                                if (!posicionFin) {
-                                    e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-
-                                } else {
-                                    if (!nuevaListaTokens.isEmpty()) {
-
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                if (!tknActual.getTipo().equals(Tipos.ENTERO)) {
-                                                    System.out.println("zzzzzzzzzzzzz-AS-ENCONTRAMOS ERROR1> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                                                    e = new MiError(linea, " ERROR 112: se necesita un argumento entero para esta funcion ");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                    System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
-                                                    System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-
-                                                }
-                                            }
-                                        } else {
-                                            e = new MiError(linea, " Error 112: Se necesita un argumento entero para esta funcion");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                        }
-                                    }
-                                }
-                                break;
                             case "GIRAIZQUIERDA":
                             case "GI":
-                                //Token siguiente esperado debe ser tipo IDENTIFICADOR 
-                                linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-                                nuevoContenido = buscarInstruccion(tknActual);
-                                //erroresEncontrados = new ArrayList<MiError>();
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                                if (!estamosEnRepite) {
-                                    erroresEncontrados = new ArrayList<MiError>();
-                                }
-                                if (!posicionFin) {
-                                    e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            case "RETROCEDE":
+                            case "RE":
+                                System.out.println("gigigi-AS-ESTAMOS EN GIRADERECHA ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO");
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getInstruccion());
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO CONTIENE LOS SIGUIENTE ERRORES->> " + nuevoContenido.getErroresEncontrados());
 
-                                } else {
-                                    if (!nuevaListaTokens.isEmpty()) {
+                                nuevoContenido = casoComandoConArgumentoEntero(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin, variablesDeclaradas);
 
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                if (!tknActual.getTipo().equals(Tipos.ENTERO)) {
-                                                    e = new MiError(linea, "Error 111: Se espera un numero entero");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                }
-                                            }
-                                        } else {
-                                            e = new MiError(linea, " Error 112: Se necesita un argumento entero para esta funcion");
-                                            erroresEncontrados.add(e);
-                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                        }
-                                    }
-                                }
-
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido);
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getErroresEncontrados());
                                 break;
 
                             case "HAZ":
-                                //Token siguiente esperado debe ser tipo IDENTIFICADOR 
+                                System.out.println("hhhhhh-AS-ESTAMOS EN HAZ 1> ");
+                                //Token esperado debe ser tipo OPERADOR DE DECLARACION DE VARIABLE (")
+                                System.out.println("hhhhhh-AS-EL TOKEN ACTUAL ES 2-> " + tknActual.toString());
                                 linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+                                System.out.println("hhhhhh-AS-EL VALOR DE LINEA ACTUAL ES 3-> " + linea);
+                                System.out.println("hhhhhh-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES 4 ->  " + tknActual.getLinea());
+                                System.out.println("hhhhhh-AS-LOS ERRORES ANTES DE UBICAR EL CONTENIDO SON -> " + nuevoContenido.getErroresEncontrados());
                                 nuevoContenido = buscarInstruccion(tknActual);
-                                //erroresEncontrados = new ArrayList<MiError>();
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+                                System.out.println("hhhhhh-AS-EL VALOR DE NUEVOCONTENIDO ES -> " + nuevoContenido.getInstruccion());
+                                System.out.println("hhhhhh-AS-LOS ERRORES ENCONTRADOS LUEGO DE IR A LA FUNCION BUSCARiNSTRUCCION SON -> " + nuevoContenido.getErroresEncontrados());
+                                String nuevaVariable = "";
+
                                 if (estamosEnRepite) {
                                     e = new MiError(linea, " ERROR 150: la lista de comandos de REPITE no debe contener el comando HAZ");
                                     erroresEncontrados.add(e);
@@ -322,78 +224,138 @@ public class AnalizadorSintactico {
                                 } else {
                                     if (!nuevaListaTokens.isEmpty()) {
                                         tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
+                                        if (tknSigte.getLinea() == linea) {
                                             tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("yyyyyyyyyyyyy-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (!tknActual.getTipo().equals(Tipos.DECLARACION)) {
-                                                e = new MiError(linea, " ERROR 119: falta el operador de declaracion de variables");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                            }
-                                        }
-                                        tknSigte = nuevaListaTokens.get(0);
-
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("yyyyyyyyyyyyy-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                e = new MiError(linea, " ERROR 110: falta el nombre de un identificador valido");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR1> ");
+                                            System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                            if (tknActual.getTipo().equals(Tipos.DECLARACION)) {
+                                                //Encontramos el token esperado, por lo tanto solo lo aceptamos y seguimos adelante
                                             } else {
-                                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                                if (existeVariableDeclarada) {
-                                                    e = new MiError(linea, " ERROR 122: la variable ya fue declarada con anterioridad");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                    System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR2> ");
-                                                } else {
-                                                    variablesDeclaradas.add(tknActual.getNombre());
-                                                }
-                                            }
-                                        }
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("yyyyyyyyyyyyy-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (!tknActual.getTipo().equals(Tipos.ASIGNACION)) {
-                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion");
+                                                //Como el token no coincide con el esperado entonces existe un error
+                                                e = new MiError(linea, " ERROR 119: falta el operador de declaracion de variables ( \" )");
                                                 erroresEncontrados.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR3> ");
+                                                System.out.println("hhhhhh-AS-ENCONTRAMOS UN ERRROR -> " + e.toString());
+                                                System.out.println("hhhhhh-AS-LOS ERRORES ENCONTRADOS LUEGO DEL NUEVO ERROR -> " + nuevoContenido.getErroresEncontrados());
                                             }
-                                        }
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("yyyyyyyyyyyyy-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                if (!tknActual.getTipo().equals(Tipos.ENTERO)) {
-                                                    e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                    System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR4> ");
-                                                }
-                                            } else {
-                                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                                if (!existeVariableDeclarada) {
-                                                    e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                    System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR5> ");
-                                                }
-                                            }
-
                                         } else {
-                                            e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
+                                            e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
                                             erroresEncontrados.add(e);
                                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                            System.out.println("yyyyyyyyyyyyy-AS-HAYAMO UN ERROR7> ");
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            break;
+
+                                        }
+
+                                        //Token esperado debe ser tipo VARIABLE NO DECLARADA 
+                                        tknSigte = nuevaListaTokens.get(0);
+                                        System.out.println("hhhhhh-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                                        //Revisamos que sigamos en la misma linea
+                                        if (tknSigte.getLinea() == linea) {
+                                            // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
+                                            tknActual = nuevaListaTokens.remove(0);
+                                            System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                                                //Encontramos el token esperado, al ser un identificador, verificamos que no haya sido declarado antes
+                                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                                                if (existeVariableDeclarada) {
+                                                    //El identificador existe por lo tanto no puede ser usado nuevante, lanzamos un error
+                                                    e = new MiError(linea, " ERROR 122: la variable fue definida previamente");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR2 -> " + e.toString());
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                } else {
+                                                    //El identificador no existe en las variablesDeclaradas => es nuevaVariable
+                                                    nuevaVariable = tknActual.getNombre();
+                                                }
+                                            } else {
+                                                e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMO UN ERROR1> ");
+                                            }
+                                        } else {
+                                            e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            break;
+
+                                        }
+
+                                        //Token esperado debe ser tipo OPERADOR DE ASIGNACION (:)
+                                        tknSigte = nuevaListaTokens.get(0);
+                                        System.out.println("hhhhhh-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                                        //Revisamos que sigamos en la misma linea
+                                        if (tknSigte.getLinea() == linea) {
+                                            // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
+                                            tknActual = nuevaListaTokens.remove(0);
+                                            System.out.println("yyyyyyyyyyyyy-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                            if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
+                                                //Encontramos el token esperado, por lo tanto solo lo aceptamos y seguimos adelante
+                                            } else {
+                                                //Como el token no coincide con el esperado entonces existe un error
+                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion de valor a variables (:) para completar la declaracion");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-ENCONTRAMOS UN ERRROR -> " + e.toString());
+                                                System.out.println("hhhhhh-AS-LOS ERRORES ENCONTRADOS LUEGO DEL NUEVO ERROR -> " + nuevoContenido.getErroresEncontrados());
+                                            }
+                                        } else {
+                                            e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            break;
+
+                                        }
+
+                                        //Token esperado debe ser tipo IDENTIFICADOR O ENTERO
+                                        tknSigte = nuevaListaTokens.get(0);
+                                        System.out.println("hhhhhh-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                                        //Revisamos que sigamos en la misma linea
+                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
+                                            // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
+                                            tknActual = nuevaListaTokens.remove(0);
+                                            System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                                                //Encontramos el token esperado, al ser un identificador, verificamos que haya sido declarado antes
+                                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                                                if (!existeVariableDeclarada) {
+                                                    //El identificador no existe por lo tanto no puede ser usado => error
+                                                    e = new MiError(linea, " ERROR 154: el valor a asignar a la variable debe ser un entero o una variable declarada previamente");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR1 -> " + e.toString());
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                } else {
+                                                    //El identificador fue declarado previamente por lo tanto puede ser utilizado como valor de variable => declaramos la nuevaVariable
+                                                     if (nuevaVariable.length() > 0) {
+                                                    variablesDeclaradas.add(nuevaVariable);
+                                                    System.out.println("hhhhhh-SE DECLARO UNA NUEVA VARIABLE -> " + variablesDeclaradas);
+                                                     }
+                                                }
+                                            } else if (tknActual.getTipo().equals(Tipos.ENTERO)) {
+                                                //Encontramos el token esperado, en este caso un entero, por lo tanto podemos declarar la nuevaVariable 
+                                                if (nuevaVariable.length() > 0) {
+                                                    variablesDeclaradas.add(nuevaVariable);
+                                                }
+                                                System.out.println("hhhhhh-SE DECLARO UNA NUEVA VARIABLE -> " + variablesDeclaradas);
+                                            } else {
+                                                e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR2 -> " + e.toString());
+                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                break;
+
+                                            }
                                         }
                                     }
                                 }
-
                                 break;
 
                             case "REPITE":
@@ -427,9 +389,8 @@ public class AnalizadorSintactico {
                                                         e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
                                                         erroresEncontradosEnRepite.add(e);
                                                         nuevoContenido.setErroresEncontrados(erroresEncontradosEnRepite);
-                                                        System.out.println("rrrrrr-AS-HAYAMO UN ERROR1> ");
-                                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
-                                                        System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                        System.out.println("rrrrrr-AS-HAYAMOS UN ERROR2 > " + e.toString());
+                                                        System.out.println("rrrrrr-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                                                     }
                                                     break;
                                                 //lo aceptamos y vemos el siguiente argumento
@@ -510,7 +471,7 @@ public class AnalizadorSintactico {
                                             if (tknSigte.getTipo().equals(Tipos.COMANDOHUGO)) {
                                                 //es un CORIZQ -> lo aceptamos ->  ¿ tknSigte = nuevaListaTokens.get(0); ?
                                                 //Comprobamos que sea un argumento de REPITE esperamos un CORIZQ
-                                                System.out.println("rrrrrr-AS-EL VALOR TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
+                                                System.out.println("rrrrrr-AS-TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
                                                 existeListaComandosEnRepite = true;
                                                 System.out.println("rrrrrr-AS- INICIA  LISTA DE NUEVALISTATOKENS RESTANTE");
                                                 nuevaListaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
@@ -522,14 +483,13 @@ public class AnalizadorSintactico {
                                                 System.out.println("rrrrrr-AS-HAYAMO UN ERROR9> ");
 
                                             } else if (!tknSigte.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                                System.out.println("rrrrrr-AS-EL VALOR TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE NO COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
+                                                System.out.println("rrrrrr-AS- TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE NO COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
                                                 existeCorIzqEnRepite = false;
                                                 e = new MiError(linea, " ERROR 131: la lista de comandos a repetir debe comenzar con un comando valido");
                                                 erroresEncontradosEnRepite.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontradosEnRepite);
-                                                System.out.println("rrrrrr-AS-HAYAMO UN ERROR7> ");
-                                                System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
-                                                System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                System.out.println("rrrrrr-AS-HAYAMOS UN ERROR2-> " + e.toString());
+                                                System.out.println("rrrrrr-AS-LA LISTA DE ERRORES DE ESTA LINEA SON->> " + nuevoContenido.getErroresEncontrados());
                                             }
 
                                         } else {
@@ -548,21 +508,29 @@ public class AnalizadorSintactico {
                             default:
                                 break;
                         }
+                        break;
 
+                    case "ENTERO":
+                        System.out.println("[eeeeee-AS-ESTAMOS EN ENTERO->> " + tknActual.toString());
+                        break;
+                    case "REAL":
+
+                        break;
+                    case "DESCONOCIDO":
+                        break;
                     case "IDENTIFICADOR":
-                        System.out.println("xxxxxxxx-AS-ESTAMOS EN CASOIDENTIFICADOR");
-                        //Token siguiente esperado debe ser tipo IDENTIFICADOR 
+                        System.out.println("iiiiii-AS-ESTAMOS EN CASOIDENTIFICADOR" + '\n');
+
                         linea = tknActual.getLinea();
-                        System.out.println("iii-AS-EL VALOR DE LINEA ES> " + linea);
-                        System.out.println("iii-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+
+                        System.out.println("iiiiii-AS-EL VALOR DE LINEA ES 1 > " + linea);
+                        System.out.println("iiiiii-AS-EL VALOR DE LINEA DEL tokenActual ES 2> " + tknActual.getLinea());
+                        System.out.println("iiiiii-AS-EL tokenActual ES 3> " + tknActual);
+
                         nuevoContenido = buscarInstruccion(tknActual);
-                        //erroresEncontrados = new ArrayList<MiError>();
-                        System.out.println("iii-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                        /*
-                        if (!estamosEnRepite) {
-                            erroresEncontrados = new ArrayList<MiError>();
-                        }
-                         */
+
+                        System.out.println("iiiiii-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
                         if (!posicionFin) {
                             e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
                             erroresEncontrados.add(e);
@@ -571,12 +539,22 @@ public class AnalizadorSintactico {
                             if (!nuevaListaTokens.isEmpty()) {
                                 if (estamosEnRepite) {
                                     //Solo lo aceptamos 
-                                } else if (tknActual.getPosicion() == 0) {
-                                    //Token es un identificador en el comienzo de una nueva linea 
-                                    e = new MiError(linea, " Error 125: toda instruccion de REPITE debe ser comando valido");
+                                    e = new MiError(linea, " ERROR 151: toda identificador o variable debe ser el argumento de un comando valido");
                                     erroresEncontrados.add(e);
                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    System.out.println("iii-AS-HAYAMOS UN ERROR2> ");
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                } else if (tknActual.getPosicion() == 0) {
+                                    //Token es un identificador en el comienzo de una nueva linea 
+                                    e = new MiError(linea, " ERROR 135: la instruccion debe comenzar con un comando valido");
+                                    erroresEncontrados.add(e);
+                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 6> " + e.toString());
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 7> " + nuevoContenido.getErroresEncontrados());
+                                    tknSigte = nuevaListaTokens.get(0);
+                                    if (tknSigte.getLinea() == linea) {
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -584,14 +562,6 @@ public class AnalizadorSintactico {
                         //e = new MiError(linea, " Error 125: la expresion debe comenzar con un comando permitido");
                         break;
 
-                    case "ENTERO":
-
-                        break;
-                    case "REAL":
-
-                        break;
-                    case "DESCONOCIDO":
-                        break;
                     case "CORIZQ":
                         System.out.println("[[[[[[-AS-ESTAMOS EN [->> " + tknActual.toString());
                         linea = tknActual.getLinea();
@@ -610,16 +580,29 @@ public class AnalizadorSintactico {
 
                         } else {
                             if (!nuevaListaTokens.isEmpty()) {
-                                if (estamosEnRepite) {//Vemos si el token siguiente 
-                                    //es un CORIZQ -> lo aceptamos ->  ¿ tknSigte = nuevaListaTokens.get(0); ?
-                                    System.out.println("[[[[[[-AS-ESTAMOS EN CORIZQ DENTRO DE ESTAMOSENREPITE> " + estamosEnRepite);
+                                //Primero verificamos estar dentro del comando REPITE
+                                if (estamosEnRepite) {
+                                    //Buscamos la existencia del CORDER en la misma linea del CORIZQ
+                                    System.out.println("[[[[[[-AS-ESTAMOS EN CORIZQ DENTRO DE  IF ESTAMOSENREPITE> " + estamosEnRepite);
+                                    System.out.println("[[[[[[-AS-EL TAMANO RESTANTE DE LA nuevaListaTokens es -> " + nuevaListaTokens.size());
                                     Token tok = new Token();
                                     for (int i = 0; i < nuevaListaTokens.size(); ++i) {
                                         tok = nuevaListaTokens.get(i);
-                                        if (tok.getTipo().equals(Tipos.CORDER) && (tok.getLinea() == linea)) {
-                                            existeCorDerEnRepite = true;
+                                        if (tok.getLinea() == linea) {
+                                            if (tok.getTipo().equals(Tipos.CORDER)) {
+                                                existeCorDerEnRepite = true;
+                                                System.out.println("[[[[[-AS-ENCONTRAMOS EL CORDER EN LA MISMA LINEA 0-> " + existeCorDerEnRepite);
+                                                break;
+                                            } else {
+                                                existeCorDerEnRepite = false;
+                                            }
+                                        } else {
+                                            //El CORDER no estaba en la misma linea del CORIZQ
+                                            existeCorDerEnRepite = false;
+                                            break;
                                         }
-                                        System.out.println("[[[[[-AS-EL VALOR DE EXISTECORDERENREPITE ES -> " + existeCorDerEnRepite);
+                                        System.out.println("[[[[[-AS-NO ENCONTRAMOE EL CORDER 1-> " + existeCorDerEnRepite);
+                                        System.out.println("[[[[[-AS-EL VALOR DE EXISTECORDERENREPITE ES 2-> " + tok.toString());
                                     }
 
                                     System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido 1> " + nuevoContenido.getErroresEncontrados());
@@ -627,13 +610,6 @@ public class AnalizadorSintactico {
                                     //nuevoContenido.getErroresEncontrados().forEach( item ->System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + item )); 
                                     System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getInstruccion());
 
-                                    //for (int i = 0; i < nuevoContenido.getErroresEncontrados().size(); ++i){
-                                    //   MiError e1 = nuevoContenido.getErroresEncontrados().get(1);
-                                    //    erroresEncontrados.add(e1);
-                                    //}
-                                    //List<MiError> myError = new ArrayList<MiError>();
-                                    //myError = nuevoContenido.getErroresEncontrados().subList(0, 1);
-                                    //System.out.println("[[[[[[-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + myError.get(0));
                                     if (!existeCorDerEnRepite) {
                                         existeCorDerEnRepite = false;
                                         e = new MiError(linea, " ERROR 103: falta corchete derecho");
@@ -702,9 +678,12 @@ public class AnalizadorSintactico {
 
             //FINAL TODO NUEVO 
         }
-        System.out.println("22222-AS- INICIA  LISTA CONTENIDO FINAL****");
+        System.out.println(
+                "22222-AS- INICIA  LISTA CONTENIDO FINAL****");
 
-        for (int i = 0; i < listaContenidoFinal.size(); ++i) {
+        for (int i = 0;
+                i < listaContenidoFinal.size();
+                ++i) {
 
             if (listaContenidoFinal.get(i).getErroresEncontrados() == null) {
                 System.out.println(listaContenidoFinal.get(i).getLinea() + " <> " + listaContenidoFinal.get(i).getInstruccion());
@@ -717,23 +696,91 @@ public class AnalizadorSintactico {
                 }
             }
         }
-        System.out.println("22222-AS- FINALIZA LISTA DE CONTENIDO FINAL" + "\n");
+
+        System.out.println(
+                "22222-AS- FINALIZA LISTA DE CONTENIDO FINAL" + "\n");
         return listaContenidoFinal;
     } //FIN DEL NUEVO SINTACTICO
 
-    public void casoComandoConArgumentoEntero(){
-        
+    public LineaContenido casoComandoConArgumentoEntero(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin, ArrayList<String> variablesDeclaradas) {
+        System.out.println("cCcAE-AS-ESTAMOS DENRO FUNCION casoComandoConArgumentoEntero con el token->" + tknActual.toString());
+        //Token siguiente esperado debe ser tipo IDENTIFICADOR 
+
+        int linea = tknActual.getLinea();
+        boolean existeVariableDeclarada = false;
+
+        System.out.println("cCcAE-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+        //erroresEncontrados = new ArrayList<MiError>();
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        System.out.println("cCcAE-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+        /*
+                                if (!estamosEnRepite) {
+                                    erroresEncontrados = new ArrayList<MiError>();
+                                }
+         */
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("cCcAE-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                if (tknSigte.getLinea() == tknActual.getLinea()) {
+                    tknActual = nuevaListaTokens.remove(0);
+                    System.out.println("cCcAE-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+
+                    if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                        existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                        if (!existeVariableDeclarada) {
+                            e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
+                            erroresEncontrados.add(e);
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> ");
+                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
+                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                        }
+                    } else if (tknActual.getTipo().equals(Tipos.ENTERO)) {
+                        //Solo lo aceptamos y seguimos adelante
+                    } else {
+                        System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                        e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
+                        erroresEncontrados.add(e);
+                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR2 falta de argumento entero> " + e.toString());
+                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR2 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
+                    }
+                } else {
+                    e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                }
+            }
+        }
+        return nuevoContenido;
+
     }
+
     public LineaContenido buscarInstruccion(Token tknActual) {
 
         int linea = tknActual.getLinea();
-        System.out.println("zzzzzzzzzzzzz-BUSCARINSTRUCCIONES-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("bIbIbI-BUSCARINSTRUCCIONES-EL VALOR DE LINEA ES 1 > " + linea);
         LineaContenido nuevo = new LineaContenido();
         List<LineaContenido> contenidoFinal = this.getListaContenidoFinal();
         for (int i = 0; i < contenidoFinal.size(); ++i) {
             if (contenidoFinal.get(i).getLinea() == linea) {
                 nuevo = (LineaContenido) contenidoFinal.get(i);
-                System.out.println("yyyyyyyyyyyyy-BUSCARINSTRUCIONES-EL VALOR NUEVOCONTENIDO ES> " + nuevo.getInstruccion());
+                System.out.println("bIbIbI-BUSCARINSTRUCIONES-EL VALOR NUEVOCONTENIDO ES 2> " + nuevo.getInstruccion());
                 break;
             }
         }

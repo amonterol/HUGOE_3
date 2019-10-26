@@ -168,22 +168,28 @@ public class AnalizadorLexico {
                     } else if (lexemas[i].charAt(0) == '"') {
                         //Contemplamos la posibilidad de se presente la forma ("id) o ("entero) 
                         if (lexemas[i].length() > 1) {
-                            String primerCaracter = lexemas[i].substring(0, 1);
-                            nuevoToken = new Token(primerCaracter, Token.Tipos.DECLARACION, linea, 1);
-                            listaTokens.add(nuevoToken);
-                            auxTokens.add(nuevoToken);
-                            //El resto seria el resto de lexemas[i] menos el primer caracter o sea un entero o un posible identificador 
-                            String resto = lexemas[i].substring(1);
-                            if (Character.isDigit(resto.charAt(0))) {
-                                nuevoToken = esNumero(lexemas[i], linea, 2);
+                            if (i == 1) {
+                                String primerCaracter = lexemas[i].substring(0, 1);
+                                nuevoToken = new Token(primerCaracter, Token.Tipos.DECLARACION, linea, 1);
                                 listaTokens.add(nuevoToken);
                                 auxTokens.add(nuevoToken);
-                            } else if (id.esIdentificador(resto)) {
-                                nuevoToken = new Token(resto, Token.Tipos.IDENTIFICADOR, linea, 2);
-                                listaTokens.add(nuevoToken);
-                                auxTokens.add(nuevoToken);
+                                //El resto seria el resto de lexemas[i] menos el primer caracter o sea un entero o un posible identificador 
+                                String resto = lexemas[i].substring(1);
+                                if (Character.isDigit(resto.charAt(0))) {
+                                    nuevoToken = esNumero(lexemas[i], linea, 2);
+                                    listaTokens.add(nuevoToken);
+                                    auxTokens.add(nuevoToken);
+                                } else if (id.esIdentificador(resto)) {
+                                    nuevoToken = new Token(resto, Token.Tipos.IDENTIFICADOR, linea, 2);
+                                    listaTokens.add(nuevoToken);
+                                    auxTokens.add(nuevoToken);
+                                } else {
+                                    nuevoToken = new Token(resto, Token.Tipos.DESCONOCIDO, linea, 2);
+                                    listaTokens.add(nuevoToken);
+                                    auxTokens.add(nuevoToken);
+                                }
                             } else {
-                                nuevoToken = new Token(resto, Token.Tipos.DESCONOCIDO, linea, 2);
+                                nuevoToken = new Token(lexemas[i], Token.Tipos.DESCONOCIDO, linea, 2);
                                 listaTokens.add(nuevoToken);
                                 auxTokens.add(nuevoToken);
                             }
@@ -587,16 +593,19 @@ public class AnalizadorLexico {
 
         char caracterAnterior;
         char caracterActual;
-
+        System.out.println("El tamanio del string es ->" + str.length());
         for (int x = 0; x < str.length(); x++) {
             caracterActual = str.charAt(x);
             switch (caracterActual) {
 
                 case '[':
                     if (x == str.length() - 1) {
+                        System.out.println("El valor de x es ->" + x);
                         caracterAnterior = str.charAt(x - 1);
                         if (caracterAnterior != ' ') {
                             lexema += " ";
+                            lexema += caracterActual;
+                        } else {
                             lexema += caracterActual;
                         }
                         break;
@@ -626,9 +635,9 @@ public class AnalizadorLexico {
                         caracterAnterior = str.charAt(x - 1);
                         if (caracterAnterior == ' ') {
                             lexema += caracterActual;
-                        } else if( caracterAnterior == '['){
+                        } else if (caracterAnterior == '[') {
                             lexema += caracterActual;
-                        }else {
+                        } else {
                             lexema += " ";
                             lexema += caracterActual;
                         }
