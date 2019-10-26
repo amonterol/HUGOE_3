@@ -86,7 +86,9 @@ public class MiError {
         " ERROR 154: el valor a asignar a la variable debe ser un entero o una variable declarada previamente",
         " ERROR 155: se requiere establecer previamente el color para el relleno",
         " ERROR 156: el comando debe estar al inicio de la linea",
-        " ERROR 156: un color valido solo pueden utilizarse como argumentos de PONCOLORELLENO o PONCOLORLAPIZ"
+        " ERROR 157: un color valido solo pueden utilizarse como argumentos de PONCOLORELLENO o PONCOLORLAPIZ",
+        " ERROR 158: un color valido no puede ser utilizado como nombre de variable a declarar",
+        " ERROR 159: un comando no puede ser como nombre de variable a declarar"
         
         
         

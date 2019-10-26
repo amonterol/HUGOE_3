@@ -129,27 +129,13 @@ public class AnalizadorLexico {
                         listaTokens.add(nuevoToken);
                         auxTokens.add(nuevoToken);
                         //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
-                    } /*else if ( cmd.esComando(lexemas[i])) {
-
-                        //System.out.println("Es una palabra reservada " + lexemas[i]);
-                        nuevoToken = new Token(lexemas[i], Token.Tipos.COMANDO, linea, i);
-                        listaTokens.add(nuevoToken);
-                        auxTokens.add(nuevoToken);
-                        //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
-
-                    }*/ else if (comandos.esComando(lexemas[i])) {
+                    } else if (comandos.esComando(lexemas[i])) {
                         System.out.println("Es una palabra reservada " + lexemas[i]);
                         nuevoToken = comandos.esComandoDeHugo(lexemas[i], linea, i);
                         listaTokens.add(nuevoToken);
                         auxTokens.add(nuevoToken);
                         //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
 
-                    } else if (colores.esColorPermitido(lexemas[i])) {
-                        System.out.println("Es un color permitido " + lexemas[i]);
-                        nuevoToken = new Token(lexemas[i], Token.Tipos.COLOR, linea, i);
-                        listaTokens.add(nuevoToken);
-                        auxTokens.add(nuevoToken);
-                        //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
                     } else if (id.esIdentificador(lexemas[i])) { // && !existeLineaIniciaSinComando) {
                         //System.out.println("Es un identificador " + lexemas[i]);
                         nuevoToken = new Token(lexemas[i], Token.Tipos.IDENTIFICADOR, linea, i);
@@ -167,9 +153,12 @@ public class AnalizadorLexico {
                         auxTokens.add(nuevoToken);
                     } else if (lexemas[i].charAt(0) == '"') {
                         //Contemplamos la posibilidad de se presente la forma ("id) o ("entero) 
+                       System.out.println("Es comillas de declaracion " + lexemas[i]);
                         if (lexemas[i].length() > 1) {
                             if (i == 1) {
+                               
                                 String primerCaracter = lexemas[i].substring(0, 1);
+                                 System.out.println("Es comillas de declaracion " + primerCaracter);
                                 nuevoToken = new Token(primerCaracter, Token.Tipos.DECLARACION, linea, 1);
                                 listaTokens.add(nuevoToken);
                                 auxTokens.add(nuevoToken);
@@ -177,6 +166,11 @@ public class AnalizadorLexico {
                                 String resto = lexemas[i].substring(1);
                                 if (Character.isDigit(resto.charAt(0))) {
                                     nuevoToken = esNumero(lexemas[i], linea, 2);
+                                    listaTokens.add(nuevoToken);
+                                    auxTokens.add(nuevoToken);
+                                } else if (colores.esColorPermitido(resto)) {
+                                     System.out.println("Estamos en esColorePermitido " + resto);
+                                    nuevoToken = new Token(resto, Token.Tipos.COLOR, linea, 2);
                                     listaTokens.add(nuevoToken);
                                     auxTokens.add(nuevoToken);
                                 } else if (id.esIdentificador(resto)) {
@@ -214,6 +208,10 @@ public class AnalizadorLexico {
                                 nuevoToken = esNumero(resto, linea, 4);
                                 listaTokens.add(nuevoToken);
                                 auxTokens.add(nuevoToken);
+                            } else if (colores.esColorPermitido(resto)) {
+                                nuevoToken = new Token(resto, Token.Tipos.COLOR, linea, 4);
+                                listaTokens.add(nuevoToken);
+                                auxTokens.add(nuevoToken);
                             } else if (id.esIdentificador(resto)) {
                                 nuevoToken = new Token(resto, Token.Tipos.IDENTIFICADOR, linea, 4);
                                 listaTokens.add(nuevoToken);
@@ -224,6 +222,12 @@ public class AnalizadorLexico {
                                 auxTokens.add(nuevoToken);
                             }
 
+                        } else if (colores.esColorPermitido(lexemas[i])) {
+                            System.out.println("Es un color permitido " + lexemas[i]);
+                            nuevoToken = new Token(lexemas[i], Token.Tipos.COLOR, linea, i);
+                            listaTokens.add(nuevoToken);
+                            auxTokens.add(nuevoToken);
+                            //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
                         } else {
                             //Contemplamos la posibilidad de se presente la forma (: id) o (: entero) 
                             nuevoToken = new Token(lexemas[i], Token.Tipos.ASIGNACION, linea, i);

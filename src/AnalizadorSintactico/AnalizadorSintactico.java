@@ -301,11 +301,22 @@ public class AnalizadorSintactico {
                                                     //El identificador no existe en las variablesDeclaradas => es nuevaVariable
                                                     nuevaVariable = tknActual.getNombre();
                                                 }
-                                            } else {
-                                                e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
+                                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                                                e = new MiError(linea, " ERROR 158: un color valido no puede ser utilizado como nombre de variable a declarar");
                                                 erroresEncontrados.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                 System.out.println("hhhhhh-AS-HAYAMO UN ERROR1> ");
+                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                                e = new MiError(linea, " ERROR 159: un comando no puede ser como nombre de variable a declarar");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMO UN ERROR1> ");
+                                            } else {
+                                                e = new MiError(linea, " ERROR 136: el nombre de variable no es valido");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                                             }
                                         } else {
                                             e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
@@ -376,6 +387,16 @@ public class AnalizadorSintactico {
                                                     variablesDeclaradas.add(nuevaVariable);
                                                 }
                                                 System.out.println("hhhhhh-SE DECLARO UNA NUEVA VARIABLE -> " + variablesDeclaradas);
+                                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                                                e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMO UN ERROR1> ");
+                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                                e = new MiError(linea, " ERROR 161: un comando no puede ser como como valor de la variable");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                System.out.println("hhhhhh-AS-HAYAMO UN ERROR1> ");
                                             } else {
                                                 e = new MiError(linea, " ERROR 130: falta el valor para asignar a la variable declarada");
                                                 erroresEncontrados.add(e);
