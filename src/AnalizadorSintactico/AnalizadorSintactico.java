@@ -68,6 +68,7 @@ public class AnalizadorSintactico {
             boolean existeCorIzqEnRepite = false;
             boolean existeCorDerEnRepite = false;
             boolean existeListaComandosEnRepite = false;
+            boolean existePonColorRelleno = false;
             //Verificamos que el ultimo comando del programa se FIN
             posicionFin = posicionComandoFin();
             List<MiError> erroresEncontrados = new ArrayList<>();
@@ -178,6 +179,27 @@ public class AnalizadorSintactico {
                                     }
                                 }
                                 break;
+                            case "BORRAPANTALLA":
+                            case "BP":
+                            case "SUBELAPIZ":
+                            case "SL":
+                            case "BAJALAPIZ":
+                            case "BL":
+                            case "GOMA":
+                            case "CENTRO":
+                            case "OCULTATORTUGA":
+                            case "OT":
+                            case "MUESTRATORTUGA":
+                            case "MT":
+                            case "PONLAPIZ":
+                            case "LAPIZNORMAL":
+
+                                System.out.println("gigigi-AS-ESTAMOS EN GIRADERECHA ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO");
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO ANTES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getInstruccion());
+                                nuevoContenido = casoComandoSinArgumento(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin);
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido);
+                                System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getErroresEncontrados());
+                                break;
 
                             case "AVANZA":
                             case "AV":
@@ -196,7 +218,17 @@ public class AnalizadorSintactico {
                                 System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido);
                                 System.out.println("gigigi-AS-ESTA LINEA DE CONTENIDO DESPUES DE IR A FUNCION CASOCOMANDOCONARGUMENTOENTERO ->> " + nuevoContenido.getErroresEncontrados());
                                 break;
-
+                            case "PONCOLORLAPIZ":
+                            case "PONCL":
+                                casoPonColorLapiz(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin);
+                                break;
+                            case "PONCOLORRELLENO":
+                                existePonColorRelleno = true;
+                                nuevoContenido = casoPonColorRelleno(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin);
+                                break;
+                            case "RELLENA":
+                                nuevoContenido = casoComandoRellena(tknActual, erroresEncontrados, nuevaListaTokens, posicionFin, existePonColorRelleno);
+                                break;
                             case "HAZ":
                                 System.out.println("hhhhhh-AS-ESTAMOS EN HAZ 1> ");
                                 //Token esperado debe ser tipo OPERADOR DE DECLARACION DE VARIABLE (")
@@ -333,10 +365,10 @@ public class AnalizadorSintactico {
                                                     System.out.println("hhhhhh-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                                                 } else {
                                                     //El identificador fue declarado previamente por lo tanto puede ser utilizado como valor de variable => declaramos la nuevaVariable
-                                                     if (nuevaVariable.length() > 0) {
-                                                    variablesDeclaradas.add(nuevaVariable);
-                                                    System.out.println("hhhhhh-SE DECLARO UNA NUEVA VARIABLE -> " + variablesDeclaradas);
-                                                     }
+                                                    if (nuevaVariable.length() > 0) {
+                                                        variablesDeclaradas.add(nuevaVariable);
+                                                        System.out.println("hhhhhh-SE DECLARO UNA NUEVA VARIABLE -> " + variablesDeclaradas);
+                                                    }
                                                 }
                                             } else if (tknActual.getTipo().equals(Tipos.ENTERO)) {
                                                 //Encontramos el token esperado, en este caso un entero, por lo tanto podemos declarar la nuevaVariable 
@@ -518,14 +550,68 @@ public class AnalizadorSintactico {
                         break;
                     case "DESCONOCIDO":
                         break;
-                    case "IDENTIFICADOR":
-                        System.out.println("iiiiii-AS-ESTAMOS EN CASOIDENTIFICADOR" + '\n');
+                    case "COLOR":
+                        //SE QUIRE MANEJAR LOS CASOS EN QUE APARECE UN COLOR VALIDO AL INICIO DE UNA INSTRUCCION
+                        System.out.println("iiiiii-AS-ESTAMOS EN CASOCOLOR" + '\n' + tknActual.getNombre());
 
                         linea = tknActual.getLinea();
 
                         System.out.println("iiiiii-AS-EL VALOR DE LINEA ES 1 > " + linea);
                         System.out.println("iiiiii-AS-EL VALOR DE LINEA DEL tokenActual ES 2> " + tknActual.getLinea());
-                        System.out.println("iiiiii-AS-EL tokenActual ES 3> " + tknActual);
+
+                        nuevoContenido = buscarInstruccion(tknActual);
+
+                        System.out.println("iiiiii-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+                        if (!posicionFin) {
+                            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+                            erroresEncontrados.add(e);
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                        } else {
+                            if (!nuevaListaTokens.isEmpty()) {
+                                if (estamosEnRepite) {
+                                    //Solo lo aceptamos 
+                                    e = new MiError(linea, " ERROR 156: un color valido solo pueden utilizarse como argumento de PONCOLORELLENO o PONCOLORLAPIZ");
+                                    erroresEncontrados.add(e);
+                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                } else if (tknActual.getPosicion() == 0) {
+                                    //Token es un identificador en el comienzo de una nueva linea 
+                                    e = new MiError(linea, " ERROR 156: un color valido solo pueden utilizarse como argumento de PONCOLORELLENO o PONCOLORLAPIZ");
+                                    erroresEncontrados.add(e);
+                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 6> " + e.toString());
+                                    System.out.println("iiiiii-AS-HAYAMOS UN ERROR 7> " + nuevoContenido.getErroresEncontrados());
+                                    //Vemos si el token siguiente NO esperamos ningun otro token
+                                    tknSigte = nuevaListaTokens.get(0);
+                                    //Comprobamos que este en la misma linea que el identificador encontrado al inicio de una instruccion
+                                    if (tknSigte.getLinea() == linea) {
+                                        //Problema hay mas tokens en la misma linea => NUEVO ERROR
+                                        tknActual = nuevaListaTokens.remove(0);
+                                        //Como existe un nuevo token en la misma linea  removemos para analizarlo
+                                        if (tknActual.getNombre().equals("PONCOLORRELLENO") || tknActual.getNombre().equals("PONCOLORLPAIZ")) {
+                                            e = new MiError(linea, " ERROR 156: el comando debe ser la primera palabra de toda instruccion");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            System.out.println("iiiiii-AS-HAYAMOS UN ERROR 8> " + e.toString());
+                                            System.out.println("iiiiii-AS-HAYAMOS UN ERROR 9> " + nuevoContenido.getErroresEncontrados());
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                        break;
+                    case "IDENTIFICADOR":
+                        //SE QUIERE MANEJAR LOS CASOS EN QUE APARECE UN IDENTIFICADOR VALIDO AL INICIO DE UNA INSTRUCCION 
+                        //O UN IDENTIFICADOR SIN ESTAR ASOCIADO A UN COMANDO EN REPITE
+                        System.out.println("iiiiii-AS-ESTAMOS EN CASOIDENTIFICADOR" + '\n' + tknActual.getNombre());
+
+                        linea = tknActual.getLinea();
+
+                        System.out.println("iiiiii-AS-EL VALOR DE LINEA ES 1 > " + linea);
+                        System.out.println("iiiiii-AS-EL VALOR DE LINEA DEL tokenActual ES 2> " + tknActual.getLinea());
 
                         nuevoContenido = buscarInstruccion(tknActual);
 
@@ -551,15 +637,25 @@ public class AnalizadorSintactico {
                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                     System.out.println("iiiiii-AS-HAYAMOS UN ERROR 6> " + e.toString());
                                     System.out.println("iiiiii-AS-HAYAMOS UN ERROR 7> " + nuevoContenido.getErroresEncontrados());
+                                    //Vemos si el token siguiente NO esperamos ningun otro token
                                     tknSigte = nuevaListaTokens.get(0);
+                                    //Comprobamos que este en la misma linea que el identificador encontrado al inicio de una instruccion
                                     if (tknSigte.getLinea() == linea) {
-                                        break;
+                                        //Problema hay mas tokens en la misma linea => NUEVO ERROR
+                                        tknActual = nuevaListaTokens.remove(0);
+                                        //Como existe un nuevo token en la misma linea  removemos para analizarlo
+                                        if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                            e = new MiError(linea, " ERROR 156: el comando debe estar al inicio de la linea");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            System.out.println("iiiiii-AS-HAYAMOS UN ERROR 8> " + e.toString());
+                                            System.out.println("iiiiii-AS-HAYAMOS UN ERROR 9> " + nuevoContenido.getErroresEncontrados());
+                                        }
                                     }
+
                                 }
                             }
                         }
-
-                        //e = new MiError(linea, " Error 125: la expresion debe comenzar con un comando permitido");
                         break;
 
                     case "CORIZQ":
@@ -769,6 +865,222 @@ public class AnalizadorSintactico {
         }
         return nuevoContenido;
 
+    }
+
+    public LineaContenido casoComandoSinArgumento(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin) {
+
+        System.out.println("ccsa-AS-ESTAMOS DENRO FUNCION casoComandoSinArgumento con el token->" + tknActual.toString());
+        //Token siguiente esperado -> NINGUNO 
+
+        int linea = tknActual.getLinea();
+
+        System.out.println("ccsa-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("ccsa-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+        //erroresEncontrados = new ArrayList<MiError>();
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        System.out.println("ccsa-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                //Token siguiente esperado -> NINGUNO 
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("ccsa-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                System.out.println("ccsa-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                //Revisamos si sigamos en la misma linea
+                if (tknSigte.getLinea() == linea) {
+                    //Como existe un nuevo token en la misma linea del comando lo removemos para analizarlo
+                    tknActual = nuevaListaTokens.remove(0);
+                    //La funcion no admite argumentos, por lo tanto, sin importar el token que siga => error
+                    System.out.println("ccsa-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    System.out.println("ccsa-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                    System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
+                }
+            }
+        }
+        return nuevoContenido;
+
+    }
+
+    public LineaContenido casoComandoRellena(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin, boolean existePonColorRelleno) {
+
+        System.out.println("rellena-AS-ESTAMOS DENTRO FUNCION casoRellena con el token->" + tknActual.toString());
+        //Token siguiente esperado -> NINGUNO 
+
+        int linea = tknActual.getLinea();
+
+        System.out.println("rellena-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+        System.out.println("rellena-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                //Token siguiente esperado -> NINGUNO 
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("rellena-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                //Revisamos si sigamos en la misma linea
+                if (tknSigte.getLinea() == linea) {
+                    //Como existe un nuevo token en la misma linea del comando lo removemos para analizarlo
+                    tknActual = nuevaListaTokens.remove(0);
+                    //La funcion no admite argumentos, por lo tanto, sin importar el token que siga => error
+                    System.out.println("rellena-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                    System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
+                }
+            }
+        }
+        //ESTA FUNCION NECESITA QUE ANTES SE HAYA FIJADO UN COLOR PARA EL RELLENO
+        //USANDO LA FUNCION PONCOLORRELLENO -> PONCOLORRELLENO color/n/:variable
+        System.out.println("rellena-AS-EL VALOR DE existePonColorRelleno -> " + existePonColorRelleno);
+        if (!existePonColorRelleno) {
+            //Como no se encontro el comando PONCOLORRELLENA dentro de las instrucciones del programa => NUEVO ERROR
+            e = new MiError(linea, " ERROR 155: se requiere establecer previamente el color para el relleno");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+            System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+            System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+        }
+        return nuevoContenido;
+    }
+
+    public LineaContenido casoPonColorRelleno(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin) {
+
+        System.out.println("poncolorrelleno-AS-ESTAMOS DENRO FUNCION casoPonColorRelleno con el token->" + tknActual.toString());
+        //Token siguiente esperado debe ser tipo COLOR
+
+        int linea = tknActual.getLinea();
+        System.out.println("poncolorrelleno-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("poncolorrelleno-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        System.out.println("poncolorrelleno-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                //Token esperado debe ser tipo COLOR
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("poncolorrelleno-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                //Revisamos que sigamos en la misma linea
+                if (tknSigte.getLinea() == linea) {
+                    // Como sigue siendo un argumento de PONCOLORRELLENO lo removemos de la lista de tokens para analizarlo
+                    tknActual = nuevaListaTokens.remove(0);
+                    System.out.println("poncolorrelleno-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                    if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                        //El argumento corresponde a un color valido de HUGO => lo aceptamos
+                    } else {
+                        e = new MiError(linea, " ERROR 138: se debe proporcionar un color valido");
+                        erroresEncontrados.add(e);
+                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                        System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR2 > " + e.toString());
+                        System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
+                    }
+                } else {
+                    System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                    e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR5 o> " + e.toString());
+                    System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR6 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                }
+            }
+        }
+        return nuevoContenido;
+    }
+
+    public LineaContenido casoPonColorLapiz(Token tknActual, List<MiError> erroresEncontrados, List<Token> nuevaListaTokens, boolean posicionFin) {
+
+        System.out.println("poncolorlapiz-AS-ESTAMOS DENRO FUNCION casoPonColorLapiz con el token->" + tknActual.toString());
+        //Token siguiente esperado debe ser tipo COLOR
+
+        int linea = tknActual.getLinea();
+        System.out.println("poncolorlapiz-AS-EL VALOR DE LINEA ES> " + linea);
+        System.out.println("poncolorlapiz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+
+        LineaContenido nuevoContenido;
+        nuevoContenido = buscarInstruccion(tknActual);
+
+        MiError e = new MiError();
+        Token tknSigte = new Token();
+
+        System.out.println("poncolorlapiz-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+        if (!posicionFin) {
+            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
+            erroresEncontrados.add(e);
+            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+
+        } else {
+            if (!nuevaListaTokens.isEmpty()) {
+                //Token esperado debe ser tipo COLOR
+                tknSigte = nuevaListaTokens.get(0);
+                System.out.println("poncolorlapiz-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                //Revisamos que sigamos en la misma linea
+                if (tknSigte.getLinea() == linea) {
+                    // Como sigue siendo un argumento de PONCOLORLAPIZ lo removemos de la lista de tokens para analizarlo
+                    tknActual = nuevaListaTokens.remove(0);
+                    System.out.println("poncolorlapiz-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                    if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                        //El argumento corresponde a un color valido de HUGO => lo aceptamos
+                    } else {
+                        e = new MiError(linea, " ERROR 138: se debe proporcionar un color valido");
+                        erroresEncontrados.add(e);
+                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                        System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR2 > " + e.toString());
+                        System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+
+                    }
+                } else {
+                    System.out.println("poncolorlapiz-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                    e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR5 o> " + e.toString());
+                    System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR6 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                }
+            }
+        }
+        return nuevoContenido;
     }
 
     public LineaContenido buscarInstruccion(Token tknActual) {

@@ -45,7 +45,7 @@ public class MiError {
         " ERROR 102: falta corchete izquierdo",
         " ERROR 103: falta corchete derecho",
         " ERROR 110: se require una variable o identificador valido",
-        " ERROR 111: la funcion no admite argumentos",
+        " Error 111: este comando no admite argumentos",
         " Error 112: se require un argumento entero o una variable declarada previamente para este comando",
         " ERROR 114: un numero entero solo puede ser usado como argumento de una función",
         " ERROR 115: falta el comando PARA",
@@ -83,7 +83,10 @@ public class MiError {
         " ERROR 151: toda identificador o variable debe ser el argumento de un comando valido",
         " ERROR 152: se require un entero o una variable declarada para completar la declaracion de la variable", 
         " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable",
-        " ERROR 154: el valor a asignar a la variable debe ser un entero o una variable declarada previamente"
+        " ERROR 154: el valor a asignar a la variable debe ser un entero o una variable declarada previamente",
+        " ERROR 155: se requiere establecer previamente el color para el relleno",
+        " ERROR 156: el comando debe estar al inicio de la linea",
+        " ERROR 156: un color valido solo pueden utilizarse como argumentos de PONCOLORELLENO o PONCOLORLAPIZ"
         
         
         

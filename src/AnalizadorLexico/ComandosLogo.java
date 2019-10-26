@@ -89,13 +89,13 @@ public final class ComandosLogo {
         lista.add(new ComandoLogo("BORRALINEACOMBOBOX", 0));
         lista.add(new ComandoLogo("BORRALISTBOX", 0));
         lista.add(new ComandoLogo("BORRAPALETA", 0));
-        lista.add(new ComandoLogo("BORRAPANTALLA", 0));
+        lista.add(new ComandoLogo("BORRAPANTALLA", 1));
+        lista.add(new ComandoLogo("BP", 1));
         lista.add(new ComandoLogo("BORRAR", 0));
         lista.add(new ComandoLogo("BORRARARCHIVO", 0));
         lista.add(new ComandoLogo("BORRATEXTO", 0));
         lista.add(new ComandoLogo("BORRAVENTANA", 0));
         lista.add(new ComandoLogo("BOTON", 0));
-        lista.add(new ComandoLogo("BP", 1));
         lista.add(new ComandoLogo("BT", 0));
         lista.add(new ComandoLogo("CABECEA", 0));
         lista.add(new ComandoLogo("CABECEO", 0));
