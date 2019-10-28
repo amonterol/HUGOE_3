@@ -63,7 +63,7 @@ public class MiError {
         " ERROR 131: la lista de comandos a repetir debe comenzar con un comando valido",
         " ERROR 132: se require un argumento entero",
         " ERROR 133: no se indica el numero de veces que se debe repetir las instrucciones",
-        " ERROR 134: falta el operador de asignacion de valor a variables (:) para completar la declaracion",
+        " ERROR 134: falta el operador de (:)de poder utilizar una variable",
         " ERROR 135: la instruccion debe comenzar con un comando valido",
         " ERROR 136: el nombre de variable no es valido",
         " ERROR 137: la funcion requiere como argumento un color valido",
