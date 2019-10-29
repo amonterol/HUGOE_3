@@ -66,7 +66,26 @@ public final class Colores {
         return consulta;
 
     }
-     
+    
+    public int numeroColorEnLogo(String str) {
+        //System.out.println(str);
+        System.out.println("Estamos en numeroColorEnLogo " + str);
+        int numero = -1;
+        List<Color> lista;
+        lista = getListaColores();
+        Iterator<Color> iter;
+        iter = lista.iterator();
+        while (iter.hasNext()) {
+            Color c = (Color) iter.next();
+            if (c.getNombre().equalsIgnoreCase(str.trim())) {
+                numero = c.getNumero();
+                break;
+            } 
+        }
+        System.out.println("El numero del color es " + numero);
+        return numero;
+
+    }
     public List<Color> getListaColores() {
         return listaColores;
     }

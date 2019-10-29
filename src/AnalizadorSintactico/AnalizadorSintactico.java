@@ -1774,7 +1774,12 @@ public class AnalizadorSintactico {
             }
         }
         if (!existenErroresEnArchivoOriginal) {
+            String nombreColor = tknActual.getNombre();
+            Colores colors = new Colores();
             
+            int numeroColor;
+            numeroColor = colors.numeroColorEnLogo(nombreColor);
+            nuevoContenido.setInstruccion("PONCOLORRELLENO" + " " + String.valueOf(numeroColor));
             listaContenidoFinalSinErrores.add(nuevoContenido);
         }
         return nuevoContenido;
@@ -1839,6 +1844,12 @@ public class AnalizadorSintactico {
             }
         }
         if (!existenErroresEnArchivoOriginal) {
+            String nombreColor = tknActual.getNombre();
+            Colores colors = new Colores();
+            
+            int numeroColor;
+            numeroColor = colors.numeroColorEnLogo(nombreColor);
+            nuevoContenido.setInstruccion("PONCOLORLAPIZ" + " " + String.valueOf(numeroColor));
             listaContenidoFinalSinErrores.add(nuevoContenido);
         }
         return nuevoContenido;
