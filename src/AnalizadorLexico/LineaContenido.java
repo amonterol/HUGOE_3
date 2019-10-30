@@ -55,11 +55,17 @@ public class LineaContenido {
         this.erroresEncontrados = erroresEncontrados;
     }
    
-    
- @Override
-    public String toString() {
-        return "Token:" + this.linea + " " + this.instruccion + " " + this.erroresEncontrados;
+  
+   public String toStringConErrores() {
+        return this.linea + " " + this.instruccion + " " + this.erroresEncontrados;
                 
     }
 
+    @Override
+    public String toString() {
+        return this.instruccion;
+                
+    }
+    
+    
 }

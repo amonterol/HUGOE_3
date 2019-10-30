@@ -11,9 +11,22 @@ import AnalizadorLexico.LineaContenido;
 import AnalizadorLexico.MiError;
 import AnalizadorLexico.Token;
 import AnalizadorSintactico.AnalizadorSintactico;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,17 +45,17 @@ public class Compilador {
 
     public static void main(String[] args) throws IOException {
 
-        //La archivoFuente contiene la localizacion del programa escrito en .HUGO
-        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\hexagono8.hugo";
+        //El archivoFuente contiene la localizacion del programa escrito en .HUGO
+        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\cuadrado.hugo";
         if (!archivoFuente.isEmpty()) {
-            
+
             //Utilizamos el objeto "process" de la clase ProcessBuilder para ejecutar
             //la lista de comandos contenido en "command" de esta forma podemos ejecutar
             //comandos en el el "cmd"
             List<String> command = new ArrayList<>();
             command.add("cmd.exe");
             command.add("/c");
-            command.add("cd \"C:\\Program Files (x86)\\MSWLogo\" && logo32.exe -l hexagono8.hugo");
+            command.add("cd \"C:\\Program Files (x86)\\MSWLogo\" && logo32.exe -l cuadrado.lgo");
             ProcessBuilder process;
             process = new ProcessBuilder(command);
             process.redirectErrorStream(true);
@@ -51,12 +64,15 @@ public class Compilador {
             System.out.println("main+main+main+main+FINAL");
             contenidoFinal = new ArrayList<>();
             contenidoFinal = compilarArchivoFuente(archivoFuente);
+            //crearArchivoSalida(contenidoFinal);
+
             System.out.println("main+main+main+main+INICIO");
             contenidoFinal.forEach(item -> System.out.println(item)); //imprimiendo como objetos
             contenidoFinal.forEach((item) -> {
                 System.out.println(item.getLinea() + " " + item.getInstruccion());
             });
             System.out.println("main+main+main+main+FINAL");
+
         }
     }
 
@@ -100,5 +116,7 @@ public class Compilador {
         contenidoFinal = sintactico.sintactico();
         return contenidoFinal;
     }
+
+    
 
 }
