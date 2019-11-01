@@ -81,23 +81,24 @@ public class MiError {
         " ERROR 149: la lista de argumentos esta incompleta",
         " ERROR 150: la lista de comandos de REPITE no debe contener el comando HAZ",
         " ERROR 151: toda identificador o variable debe ser el argumento de un comando valido",
-        " ERROR 152: se require un entero o una variable declarada para completar la declaracion de la variable", 
+        " ERROR 152: se require un entero o una variable declarada para completar la declaracion de la variable",
         " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable",
         " ERROR 154: el valor a asignar a la variable debe ser un entero o una variable declarada previamente",
         " ERROR 155: se requiere establecer previamente el color para el relleno",
         " ERROR 156: el comando debe estar al inicio de la linea",
         " ERROR 157: un color valido solo pueden utilizarse como argumentos de PONCOLORELLENO o PONCOLORLAPIZ",
         " ERROR 158: un color valido no puede ser utilizado como nombre de variable a declarar",
-        " ERROR 159: un comando no puede ser como nombre de variable a declarar"
-        
-        
-        
-        
+        " ERROR 159: un comando de hugo  no puede ser como nombre de variable a declarar",
+        " ERROR 160: la lista de comandos a repetir debe estar entre un corchete izquierdo y uno derecho",
+        " ERROR 161: un comando de logo no puede ser usado como nombre de variable a declarar",
+       " ERROR 162: un comando de hugo no puede ser usado como valor",
+       " ERROR 163: un comando de logo no puede ser usado como valor"
 
     };
-     @Override
+
+    @Override
     public String toString() {
-        return "Error: " + this.linea + " " + this.error ;
+        return "Error: " + this.linea + " " + this.error;
     }
 
 }

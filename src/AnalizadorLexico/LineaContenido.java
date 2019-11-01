@@ -57,7 +57,8 @@ public class LineaContenido {
    
   
    public String toStringConErrores() {
-        return this.linea + " " + this.instruccion + " " + this.erroresEncontrados;
+     
+        return this.linea + " " + this.instruccion + "\n " + this.erroresEncontrados;
                 
     }
 

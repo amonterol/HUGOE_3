@@ -143,7 +143,7 @@ public class AnalizadorLexico {
                         auxTokens.add(nuevoToken);
                         //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
                     } else if (id.esIdentificador(lexemas[i])) { // && !existeLineaIniciaSinComando) {
-                        //System.out.println("Es un identificador " + lexemas[i]);
+                        System.out.println("Es un identificador " + lexemas[i]);
                         nuevoToken = new Token(lexemas[i], Token.Tipos.IDENTIFICADOR, linea, i);
                         listaTokens.add(nuevoToken);
                         auxTokens.add(nuevoToken);
@@ -170,10 +170,18 @@ public class AnalizadorLexico {
                                 auxTokens.add(nuevoToken);
                                 //El resto seria el resto de lexemas[i] menos el primer caracter o sea un entero o un posible identificador 
                                 String resto = lexemas[i].substring(1);
+                                System.out.println("Al quitar comillas queda " + resto );
                                 if (Character.isDigit(resto.charAt(0))) {
                                     nuevoToken = esNumero(lexemas[i], linea, 2);
                                     listaTokens.add(nuevoToken);
                                     auxTokens.add(nuevoToken);
+                                } else if (comandos.esComando(resto)) {
+                                    nuevoToken = comandos.esComandoDeHugo(resto, linea, 2);
+                                    System.out.println("Es una palabra reservada " + resto);
+                                    //nuevoToken = new Token(resto, Token.Tipos.COMANDOHUGO, linea, 2);
+                                    listaTokens.add(nuevoToken);
+                                    auxTokens.add(nuevoToken);
+                                    //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
                                 } else if (colores.esColorPermitido(resto)) {
                                     System.out.println("Estamos en esColorePermitido " + resto);
                                     nuevoToken = new Token(resto, Token.Tipos.COLOR, linea, 2);
@@ -214,6 +222,14 @@ public class AnalizadorLexico {
                                 nuevoToken = esNumero(resto, linea, 4);
                                 listaTokens.add(nuevoToken);
                                 auxTokens.add(nuevoToken);
+                            } else if (comandos.esComando(resto)) {
+                                nuevoToken = comandos.esComandoDeHugo(resto, linea, 4);
+                                System.out.println("Es una palabra reservada " + resto);
+                                //nuevoToken = new Token(resto, Token.Tipos.COMANDOHUGO, linea, 4);
+                                listaTokens.add(nuevoToken);
+                                auxTokens.add(nuevoToken);
+                                //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
+
                             } else if (colores.esColorPermitido(resto)) {
                                 nuevoToken = new Token(resto, Token.Tipos.COLOR, linea, 4);
                                 listaTokens.add(nuevoToken);
@@ -313,70 +329,6 @@ public class AnalizadorLexico {
             //System.out.println("SEGUIMOS EN EL WHILE.");
         } //fin del while
 
-        /*IGUAL YA NO HACEMOS ESTO AQUI SINO QUE EN EL PARSER           
-        System.out.println("xxxxxx88888 - INICIA CONTENIDO LISTA DE ERRORES");
-        System.out.println(listaErrores.size());
-        if (listaErrores != null) {
-            listaErrores.forEach(item -> System.out.println(item));
-            System.out.println("xxxxx88888 - FINALIZA CONTENIDO LISTA DE ERRORES" + "\n");
-            //System.out.println("SALIMOS DEL WHILE.");
-        }
-
-        List<MiError> existeTO;
-        existeTO = AnalizadorSintactico.posicionInicialTO(listaErrores, listaTokens);
-
-        if (!existeTO.isEmpty()) {
-            existeTO.forEach(
-                    (item) -> {
-                        listaErrores.add(0, item);
-                    });
-        } else {
-            //System.out.println(" EL COMANDO PARA EXISTE Y ESTA BIEN COLOCADO" + "\n");
-        }
-        List<MiError> existeEND = AnalizadorSintactico.posicionFinalEND(listaErrores, listaTokens);
-        if (!existeEND.isEmpty()) {
-            existeEND.forEach(
-                    (item) -> {
-                        listaErrores.add(listaErrores.size(), item);
-                    });
-        } else {
-            System.out.println(" EL COMANDO FIN EXISTE Y ESTA BIEN COLOCADO" + "\n");
-        }
-
-        System.out.println("**********************" + "\n");
-        System.out.println("ESTE ES INICIO DEL ARCHIVO DE ERRORES INCLUYENDO PRUEBA PARA Y FIN 1" + "\n");
-
-        listaErrores.forEach(
-                (item) -> {
-                    System.out.println("[" + "Linea: " + item.getLinea() + " <> Tipo: " + item.getError() + "]");
-                });
-
-        System.out.println("ESTE ES FINAL DEL ARCHIVO DE ERRORES  INCLUYENDO PRUREBA PARA Y FIN" + "\n");
-
-        System.out.println("++++++++++++**********************+++++++" + "\n");
-        System.out.println("ESTE ES EL INICIO DEL ARCHIVO CONTENIDO" + "\n");
-        //imprimirArchivoSalida(contenido);
-
-        contenido.forEach(
-                (item) -> {
-                    System.out.println("[" + "Linea: " + item.getLinea() + " <> Tipo: " + item.getContenido() + "]");
-                }
-        );
-         */
-        //System.out.println("ESTE ES EL FINAL DEL CONTENIDO" + "\n");
-        //System.out.println("++++++++ESTE ES EL INICIO DEL NUEVO CONTENIDO" + "\n");
-        //System.out.println("++++++TAMANO DEL LISTA CONTENIDO " + contenido.size() + "\n");
-        //System.out.println("++++++TAMANO DEL LISTA ERRORES " + listaErrores.size() + "\n");
-        //YA NO UNIMOS LOS ARCHIVOS SINO QUE SON UN OBJETO EN LA LISTACONTENIDOFINAL O EN LOS TOKENS
-        //List<LineaContenido> contenidoNuevo = unirContenidos(contenido, listaErrores);
-        //System.out.println("+++++++++++++ESTE ES EL FINAL DEL ARCHIVO NUEVO CONTENIDO" + "\n");
-        //crearArchivoSalida(archivoFinal);
-        //System.out.println("ESTE ES ELINICIO DEL ARCHIVO FINAL" + "\n");
-        //imprimirArchivoFinal(archivoFinal);
-        //System.out.println("ESTE ES EL FINAL DEL ARCHIVO FINAL" + "\n");
-        //System.out.println("ESTE ES EL INICIOFINAL DEL ARCHIVO UNIDO" + "\n");
-        //imprimirArchivoSalida(contenidoNuevo);
-        //System.out.println("ESTE ES EL FINAL DEL ARCHIVO UNIDO" + "\n");
         return listaContenidoFinal;
     } //fin AnalizadorLexico
 

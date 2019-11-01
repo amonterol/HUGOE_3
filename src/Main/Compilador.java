@@ -11,22 +11,12 @@ import AnalizadorLexico.LineaContenido;
 import AnalizadorLexico.MiError;
 import AnalizadorLexico.Token;
 import AnalizadorSintactico.AnalizadorSintactico;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 /**
  *
@@ -42,11 +32,20 @@ public class Compilador {
     private static List<LineaContenido> contenido;
     private static List<LineaContenido> contenidoFinal;
     private static List<MiError> listaErrores;
+    private static String fileName;
 
     public static void main(String[] args) throws IOException {
 
+        //Falta mostrar error sin args[0] no existe es decir si el no se incluye el nombre del archivo origina;
+        try {
+            fileName = args[0];
+        } catch (Exception e) {
+            //Muestra un joptionpane dialog using showMessageDialog
+            JOptionPane.showMessageDialog(null, "Debe suministrar un nombre de archivo con el formato: nombreArchivo.HUGO", "Falta archivo", JOptionPane.WARNING_MESSAGE);
+            System.exit(0);
+        }
         //El archivoFuente contiene la localizacion del programa escrito en .HUGO
-        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\cuadrado.hugo";
+        String archivoFuente = "C:\\Program Files (x86)\\MSWLogo\\" + fileName;
         if (!archivoFuente.isEmpty()) {
 
             //Utilizamos el objeto "process" de la clase ProcessBuilder para ejecutar
@@ -63,7 +62,7 @@ public class Compilador {
 
             System.out.println("main+main+main+main+FINAL");
             contenidoFinal = new ArrayList<>();
-            contenidoFinal = compilarArchivoFuente(archivoFuente);
+            contenidoFinal = compilarArchivoFuente(archivoFuente, fileName);
             //crearArchivoSalida(contenidoFinal);
 
             System.out.println("main+main+main+main+INICIO");
@@ -73,6 +72,8 @@ public class Compilador {
             });
             System.out.println("main+main+main+main+FINAL");
 
+        } else {
+            System.out.println("El archivo fuente no contiene informacion");
         }
     }
 
@@ -90,33 +91,33 @@ public class Compilador {
     produce un archivo denominado "nombreArchivoOriginal-Hugo-Errores.txt". En el segundo caso, es decir, 
     no encuentra errores se produce el nombreArchivo.
      */
-    static List<LineaContenido> compilarArchivoFuente(String archivoFuente) throws IOException {
-
+    static List<LineaContenido> compilarArchivoFuente(String archivoFuente, String fileName) throws IOException {
+        System.out.println("crearArchivoSinErrores-EL NOMBRE DEL ARCHIVO ORIGINAL SIN LA EXTENSION ES-> " + fileName);
+        //Creamos un objeto "archivo de la clase CodigoFuente pasandole como paramentro el archivo original a compilar
         CodigoFuente archivo = new CodigoFuente(archivoFuente);
-        List<String> contenido1 = new ArrayList<>();
-        /*
-        (1)
-        archivo.abrirArchivo();
-        //contenido1 = archivo.getContenidoArchivo();
-        //hasta aqui todo bien me devuelve el archivo convertido en una List<String>, es decir una instruccion por linea  
 
-        lexico = new AnalizadorLexico(archivo.getContenidoArchivo());
-        // contenido1 = lexico.eliminarCaracteresRedundates( archivo.getContenidoArchivo() );
-        //hasta aqui va bien me devuelve el List<String> con archivos sin caracteres redundantes
-        contenido = lexico.analisisLexico();
-        //hasta aqui va bien me devuelve una List<LineaContenido> con cada linea de contenido del archivo final y una List<Tokens> con cada tokens 
-         */
-
- /*(2)*/
+        //El objeto archivo usa el metodo abrirArchivo para convertir las lineas del archivo en una lista de strings
+        //la cual va quedar almacenada en el atributo "contenido" del objeto archivo
         archivo.abrirArchivo();
+
+        // Instanciamos un objeto "lexico" de la clase AnalizadorLexico con la lista de strings 
+        //almacenada en el atributo "contenido" del objeto archivo, a traves del metodo "getContenidoArchivo"
+        //de la clase CodigoFuente
         lexico = new AnalizadorLexico(archivo.getContenidoArchivo());
+
+        //Mediante el objeto "lexico" accedemos al metodo analisisLexico de la clase AnalizadorLexico
+        //para realizar el analisis lexico (creacion de tokens) el cual produce una tabla de simbolos de nombre
+        //"listaTokens"
         contenido = lexico.analisisLexico();
 
-        sintactico = new AnalizadorSintactico(lexico);
+        //Creamos un objeto de nombre "sintactico" de la clase AnalizadorSintactico, para la cual le pasamos 
+        //el objeto "lexico" creado anteriormeente
+        sintactico = new AnalizadorSintactico(lexico, fileName);
+
+        //El objeto "sintactico" llama al metodo "sintactico()" de la clase AnalizadorSintactico para realizar el
+        //analisis sintanctico y semantico de la tabla de simbolos, en este caso la "listaTokens"
         contenidoFinal = sintactico.sintactico();
         return contenidoFinal;
     }
-
-    
 
 }

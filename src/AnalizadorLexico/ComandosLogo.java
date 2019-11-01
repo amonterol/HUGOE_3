@@ -508,13 +508,14 @@ public final class ComandosLogo {
                 token.setTipo(Token.Tipos.COMANDOHUGO);
                 token.setLinea(linea);
                 token.setPosicion(posicion);
+                System.out.println("Comando  hugo encontrado fue " + cl.getNombre());
                 break;
             } else if (cl.getNombre().equalsIgnoreCase(str.trim()) && cl.getEnHugo() == 0) {
                 token.setNombre(str);
                 token.setTipo(Token.Tipos.COMANDOLOGO);
                 token.setLinea(linea);
                 token.setPosicion(posicion);
-                System.out.println("Comando encontrado fue " + cl.getNombre());
+                System.out.println("Comando  logo encontrado fue " + cl.getNombre());
                 break;
             }
         }
