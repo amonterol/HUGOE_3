@@ -289,7 +289,7 @@ public final class ComandosLogo {
         lista.add(new ComandoLogo("MUESTRA", 0));
         lista.add(new ComandoLogo("MUESTRAPOLIGONO", 0));
         lista.add(new ComandoLogo("MUESTRAT", 0));
-        lista.add(new ComandoLogo("MUESTRATORTUGA", 0));
+        lista.add(new ComandoLogo("MUESTRATORTUGA", 1));
         lista.add(new ComandoLogo("NO", 0));
         lista.add(new ComandoLogo("NODOS", 0));
         lista.add(new ComandoLogo("NOESTADO", 0));

@@ -92,7 +92,8 @@ public class MiError {
         " ERROR 160: la lista de comandos a repetir debe estar entre un corchete izquierdo y uno derecho",
         " ERROR 161: un comando de logo no puede ser usado como nombre de variable a declarar",
        " ERROR 162: un comando de hugo no puede ser usado como valor",
-       " ERROR 163: un comando de logo no puede ser usado como valor"
+       " ERROR 163: un comando de logo no puede ser usado como valor",
+       " ERROR 164: la instruccion es invalida"
 
     };
 
