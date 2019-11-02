@@ -737,7 +737,7 @@ public class AnalizadorSintactico {
                                                     existeCorIzqEnRepite = true;
                                                     System.out.println("rrrrrr-AS-EXISTE EL CORIZQ EN REPITE 4> " + existeCorIzqEnRepite);
                                                     //Vemos si el token siguiente esperamos un COMANDOHUGO
-                                                    break;
+                                                    
                                                 } else {
                                                     //No existe el corchete izquiedo 
                                                     existeCorIzqEnRepite = false;
@@ -759,7 +759,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS- INICIA  LISTA DE NUEVALISTATOKENS RESTANTE");
                                                         nuevaListaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
                                                         System.out.println("rrrrrr-AS- FINALIZA LISTA DE NUEVALISTATOKENS RESTANTE " + "\n");
-                                                        break;
+                                                        
                                                     } else if (tknSigte.getTipo().equals(Tipos.CORDER)) {
                                                         System.out.println("rrrrrr-AS- TENEMOS UN CORCHETE DERECHO SN LISTA DE COMANDOS-> " + tknSigte.getNombre());
                                                         existeCorIzqEnRepite = false;
@@ -771,7 +771,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 19> " + e.toString());
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 20> " + nuevoContenido.getErroresEncontrados());
                                                         System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                        break;
+                                                       
                                                     } else if (!tknSigte.getTipo().equals(Tipos.COMANDOHUGO)) {
                                                         System.out.println("rrrrrr-AS- TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE NO COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
                                                         existeCorIzqEnRepite = false;
@@ -783,7 +783,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 19> " + e.toString());
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 20> " + nuevoContenido.getErroresEncontrados());
                                                         System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                        break;
+                                                      
                                                     }
                                                 }
 
@@ -819,7 +819,7 @@ public class AnalizadorSintactico {
                                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 9> " + e.toString());
                                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 10> " + nuevoContenido.getErroresEncontrados());
                                                     System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                    break;
+                                                   
                                                 }
                                             }
 
@@ -833,10 +833,11 @@ public class AnalizadorSintactico {
                                             System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 15> " + e.toString());
                                             System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 16> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            break;
+                                           
                                         }
 
                                     } //fin de if de si la lista no esta a
+                                    System.out.println("rrrrrr-AS-VEMOS SI EXISTENERRORESENARCHIVOORIGINAL> " + existenErroresEnArchivoOriginal);
                                     if (!existenErroresEnArchivoOriginal) {
                                         listaContenidoFinalSinErrores.add(nuevoContenido);
                                         System.out.println("rrrrrr-AS-INICIA LISTA CONTENIDO SIN ERRORES> ");
@@ -845,7 +846,7 @@ public class AnalizadorSintactico {
                                         });
                                         System.out.println("rrrrrr-AS-FINALIZA LISTA CONTENIDO SIN ERRORES> ");
                                     }
-                                    break;
+                                   
                                 }//fin else posicion fin
                         } //fin del switch dentro del case COMANDOHUGO
                         break;
