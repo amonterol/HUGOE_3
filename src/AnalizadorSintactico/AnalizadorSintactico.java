@@ -47,7 +47,6 @@ public class AnalizadorSintactico {
     public List<LineaContenido> sintactico() throws IOException {
         System.out.println("ENTRAMOS AL SINTACTICO" + "\n" + "\n");
 
-        List<Token> auxTokens = new ArrayList<>();
         System.out.println("111111-AS- INICIA  LISTA DE TOKENS****");
         listaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
         System.out.println("111111-AS- FINALIZA LISTA DE TOKENS" + "\n");
@@ -55,9 +54,17 @@ public class AnalizadorSintactico {
         System.out.println("22222-AS- INICIA  LISTA CONTENIDO FINAL****");
         listaContenidoFinal.forEach(item -> System.out.println(item.getLinea() + " <> " + item.getInstruccion() + " <> " + item.getErroresEncontrados()));
         System.out.println("22222-AS- FINALIZA LISTA DE CONTENIDO FINAL" + "\n");
-        //List<Token> listaTokens = listaTok;
+
+        //Copiamos la listaTokens en una nueva lista,porque el analisis sintactico
+        //va removiendo en token en la cabeza de la lista.
         List<Token> nuevaListaTokens = new ArrayList<>();
-        nuevaListaTokens = listaTokens;
+        listaTokens.forEach((item) -> {
+            nuevaListaTokens.add(item);
+        });
+
+        System.out.println("333333-AS- INICIA  NUEVA LISTA DE TOKENS****");
+        listaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
+        System.out.println("333333-AS- FINALIZA NUEVA LISTA DE TOKENS" + "\n");
 
         //Revisa  que existen tokens que analizar
         if (!listaTokens.isEmpty()) {
@@ -72,13 +79,13 @@ public class AnalizadorSintactico {
 
             int m = 0;
             int lineaTknRepite = -1;
+
             boolean existeFin = false;
             boolean posicionFin = posicionComandoFin();
-
             boolean existePara = false;
-            boolean existeVariableDeclarada = false;
             int posicionPara = 0;
 
+            boolean existeVariableDeclarada = false;
             boolean existeCorIzqEnRepite = false;
             boolean existeCorDerEnRepite = false;
             boolean existeListaComandosEnRepite = false;
@@ -87,15 +94,47 @@ public class AnalizadorSintactico {
 
             //Verificamos que el ultimo comando del programa se FIN
             posicionFin = posicionComandoFin();
+
+            //Lista que contienen los errores presentes en cada linea del programa
+            //utilizamos una exclusiva para el comando REPITE por cuanto este comando
+            //contiene una lista de comandos HUGO, por lo cual merece un tratamiento diferente
             List<MiError> erroresEncontrados = new ArrayList<>();
             List<MiError> erroresEncontradosEnRepite = new ArrayList<>();
+
+            //Obejto que contiene el error encontrado en la linea del programa
+            //Este objeto posee un atributo con una lista de errores.
             MiError e;
-            //Contiene el numero de la linea de contenido que se esta procesando
+
+            //Contiene el numero de la linea de programa que se esta procesando
             int linea = 0;
 
-            //Accede a la linea de contenido que se esta analizando 
+            //Objeto con el cual se accede a la linea de contenido que se esta analizando 
             LineaContenido nuevoContenido = null;
 
+
+            /*
+            if (existeComandoFin()) {
+                if (posicionComandoFin()) {
+                    e = new MiError(linea, " ERROR 166: la estructura del programa debe finalizar con el comando FIN");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    existenErroresEnArchivoOriginal = true;
+                    ++numeroErroresEnArchivoOriginal;
+                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                }
+            } else {
+                e = new MiError(linea, " ERROR 165: la estructura del programa debe contener el comando FIN");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                existenErroresEnArchivoOriginal = true;
+                ++numeroErroresEnArchivoOriginal;
+                System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+            }
+             */
             while (!nuevaListaTokens.isEmpty()) {
 
                 System.out.println("\n" + "\n" + "\n" + "******EL TAMANIO DEL LA LISTA DE NUEVALISTATOKENSS ES " + nuevaListaTokens.size());
@@ -147,9 +186,9 @@ public class AnalizadorSintactico {
 
                                 nuevoContenido = buscarInstruccion(tknActual);
                                 System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-
-                                if (m != 0) {
-                                    e = new MiError(linea, " ERROR 140: el programa debe iniciar con el comando PARA");
+                                System.out.println("parapara-AS-LA POSICION DE PARA EN LISTA TOKENS ES> " + listaTokens.indexOf("PARA"));
+                                if (listaTokens.indexOf("PARA") == 0) {
+                                    e = new MiError(linea, " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio");
                                     erroresEncontrados.add(e);
                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                     existenErroresEnArchivoOriginal = true;
@@ -163,7 +202,7 @@ public class AnalizadorSintactico {
                                         tknSigte = nuevaListaTokens.get(0);
                                         if (tknSigte.getLinea() == tknActual.getLinea()) {
                                             tknActual = nuevaListaTokens.remove(0);
-                                            if (!tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                                            if (!tknActual.getTipo().equals(Tipos.NOMBREPROCEDIMIENTO)) {
                                                 e = new MiError(linea, " ERROR 141: el nombre del programa debe ser un identificador valido");
                                                 erroresEncontrados.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
@@ -281,7 +320,9 @@ public class AnalizadorSintactico {
                                 linea = tknActual.getLinea();
                                 System.out.println("hhhhhh-AS-EL VALOR DE LINEA ACTUAL ES 3-> " + linea);
                                 System.out.println("hhhhhh-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES 4 ->  " + tknActual.getLinea());
-                                System.out.println("hhhhhh-AS-LOS ERRORES ANTES DE UBICAR EL CONTENIDO SON -> " + nuevoContenido.getErroresEncontrados());
+                                if (nuevoContenido != null) {
+                                    System.out.println("hhhhhh-AS-LOS ERRORES ANTES DE UBICAR EL CONTENIDO SON -> " + nuevoContenido.getErroresEncontrados());
+                                }
                                 //Recuperamos el contenido de archivo del contenido final correspondiente a esta linea de instruccion
                                 //para poder incluirle los errores si aparecen
                                 nuevoContenido = buscarInstruccion(tknActual);
@@ -581,8 +622,7 @@ public class AnalizadorSintactico {
                                                 System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
                                                 System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                                                 System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            }
-                                            else {
+                                            } else {
                                                 //Como el token no era entero, se espera el uso de una variable declarada, por lo tanto debe estar el operador de asignacion (:)
                                                 e = new MiError(linea, " ERROR 134: falta el operador de asignacion (:) para poder utilizar una variable");
                                                 erroresEncontrados.add(e);
@@ -595,7 +635,7 @@ public class AnalizadorSintactico {
                                                 System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
                                             }
-                                             
+
                                         }
                                     }
                                 }
@@ -628,6 +668,7 @@ public class AnalizadorSintactico {
                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 1> " + e.toString());
                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 2> " + nuevoContenido.getErroresEncontrados());
                                     System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                    break;
 
                                 } else {
                                     if (!nuevaListaTokens.isEmpty()) {
@@ -737,7 +778,7 @@ public class AnalizadorSintactico {
                                                     existeCorIzqEnRepite = true;
                                                     System.out.println("rrrrrr-AS-EXISTE EL CORIZQ EN REPITE 4> " + existeCorIzqEnRepite);
                                                     //Vemos si el token siguiente esperamos un COMANDOHUGO
-                                                    
+
                                                 } else {
                                                     //No existe el corchete izquiedo 
                                                     existeCorIzqEnRepite = false;
@@ -759,7 +800,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS- INICIA  LISTA DE NUEVALISTATOKENS RESTANTE");
                                                         nuevaListaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
                                                         System.out.println("rrrrrr-AS- FINALIZA LISTA DE NUEVALISTATOKENS RESTANTE " + "\n");
-                                                        
+
                                                     } else if (tknSigte.getTipo().equals(Tipos.CORDER)) {
                                                         System.out.println("rrrrrr-AS- TENEMOS UN CORCHETE DERECHO SN LISTA DE COMANDOS-> " + tknSigte.getNombre());
                                                         existeCorIzqEnRepite = false;
@@ -771,7 +812,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 19> " + e.toString());
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 20> " + nuevoContenido.getErroresEncontrados());
                                                         System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                       
+
                                                     } else if (!tknSigte.getTipo().equals(Tipos.COMANDOHUGO)) {
                                                         System.out.println("rrrrrr-AS- TENEMOS UNA LISTA DE COMANDOS DE REPITE QUE NO COMIENZA CON COMANDOHUGO-> " + tknSigte.getNombre());
                                                         existeCorIzqEnRepite = false;
@@ -783,7 +824,7 @@ public class AnalizadorSintactico {
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 19> " + e.toString());
                                                         System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 20> " + nuevoContenido.getErroresEncontrados());
                                                         System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                      
+
                                                     }
                                                 }
 
@@ -819,7 +860,7 @@ public class AnalizadorSintactico {
                                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 9> " + e.toString());
                                                     System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 10> " + nuevoContenido.getErroresEncontrados());
                                                     System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                   
+
                                                 }
                                             }
 
@@ -833,7 +874,7 @@ public class AnalizadorSintactico {
                                             System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 15> " + e.toString());
                                             System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 16> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                           
+
                                         }
 
                                     } //fin de if de si la lista no esta a
@@ -846,7 +887,7 @@ public class AnalizadorSintactico {
                                         });
                                         System.out.println("rrrrrr-AS-FINALIZA LISTA CONTENIDO SIN ERRORES> ");
                                     }
-                                   
+
                                 }//fin else posicion fin
                         } //fin del switch dentro del case COMANDOHUGO
                         break;
@@ -1713,6 +1754,44 @@ public class AnalizadorSintactico {
             //FINAL TODO NUEVO 
         } // fin if listaTokens esta vacia?
 
+        LineaContenido nuevoContenidoPara = new LineaContenido();
+        Token primerToken = listaTokens.get(0);
+        primerToken.getLinea();
+        nuevoContenidoPara.setLinea(0);
+        nuevoContenidoPara.setInstruccion("");
+
+        List<MiError> erroresPara = new ArrayList<>();
+        if (!primerToken.getNombre().equals("PARA")) {
+            MiError ePara = new MiError(primerToken.getLinea(), "ERROR 140: el programa debe iniciar con el comando PARA");
+            erroresPara.add(ePara);
+            nuevoContenidoPara.setErroresEncontrados(erroresPara);
+            listaContenidoFinal.add(0, nuevoContenidoPara);
+            existenErroresEnArchivoOriginal = true;
+            ++numeroErroresEnArchivoOriginal;
+            System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA > " + ePara.toString());
+            System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA, LOS ERRORES SON > " + nuevoContenidoPara.getErroresEncontrados());
+            System.out.println("despuesWhile-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+        }
+
+        LineaContenido nuevoContenidoFin = new LineaContenido();
+        Token ultimoToken = listaTokens.get(listaTokens.size() - 1);
+
+        nuevoContenidoFin.setLinea(ultimoToken.getLinea() + 1);
+        nuevoContenidoFin.setInstruccion("");
+
+        List<MiError> erroresFin = new ArrayList<>();
+        if (!ultimoToken.getNombre().equals("FIN")) {
+            MiError eFin = new MiError(ultimoToken.getLinea() + 1, " ERROR 142: el programa debe finalizar con el comando FIN");
+            erroresFin.add(eFin);
+            nuevoContenidoFin.setErroresEncontrados(erroresFin);
+            listaContenidoFinal.add(nuevoContenidoFin);
+            existenErroresEnArchivoOriginal = true;
+            ++numeroErroresEnArchivoOriginal;
+            System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA > " + eFin.toString());
+            System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA, LOS ERRORES SON > " + nuevoContenidoFin.getErroresEncontrados());
+            System.out.println("despuesWhile-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+        }
+
         System.out.println("22222-AS- SALIENDO DEL SINTACTICOINICIA  LISTA CONTENIDO FINAL****");
         for (int i = 0;
                 i < listaContenidoFinal.size();
@@ -1790,6 +1869,7 @@ public class AnalizadorSintactico {
             nuevoContenido.setErroresEncontrados(erroresEncontrados);
             this.existenErroresEnArchivoOriginal = true;
             ++this.numeroErroresEnArchivoOriginal;
+
         } else {
             if (!nuevaListaTokens.isEmpty()) {
                 //Token esperado debe ser  ENTERO o un OPERADOR DE ASIGNACION
@@ -2536,6 +2616,25 @@ public class AnalizadorSintactico {
         return posicionFin;
     }
 
+    public boolean existeComandoPara() {
+        boolean existePara = false;
+        Token tkn;
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            tkn = (Token) iterator.next();
+            if (tkn.getNombre().equals("FIN")) {
+                existePara = true;
+                break;
+            }
+        }
+        return existePara;
+    }
+
+    public boolean posicionComandoPara() {
+        boolean posicionFin = listaTokens.get(0).getNombre().equals("PARA");
+        return posicionFin;
+    }
+
     public static void crearArchivoConErrores(List<LineaContenido> archivo, String nombreArchivoOriginal) throws IOException {
         //String ruta = "C:\\Users\\pc\\Desktop\\hexagono8-Hugo-Errores.txt";
         int index = nombreArchivoOriginal.indexOf(".");
@@ -2552,12 +2651,14 @@ public class AnalizadorSintactico {
 
         for (int i = 0; i < archivo.size(); ++i) {
             if (archivo.get(i).getErroresEncontrados() == null) {
-                texts.add(archivo.get(i).getInstruccion());
+                String instruccion = archivo.get(i).getLinea() + " " + archivo.get(i).getInstruccion();
+                texts.add(instruccion);
             } else {
+                String instruccion = archivo.get(i).getLinea() + " " + archivo.get(i).getInstruccion();
+                texts.add(instruccion);
                 for (int k = 0; k < archivo.get(i).getErroresEncontrados().size(); ++k) {
-                    String lineaConErrores = " " + archivo.get(i).getErroresEncontrados().get(k).getError();
-                    texts.add(archivo.get(i).getInstruccion());
-                    texts.add(lineaConErrores);
+                    String errores = "    " + archivo.get(i).getErroresEncontrados().get(k).getError();
+                    texts.add(errores);
                 }
             }
         }

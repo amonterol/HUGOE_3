@@ -60,7 +60,7 @@ public class AnalizadorLexico {
         Colores colores = new Colores();
         ComandosLogo comandos = new ComandosLogo();
         Identificador id = new Identificador();// = new Identificador();
-
+        NombreProcedimiento nombreProcedimiento = new NombreProcedimiento();
         Token nuevoToken;
         LineaContenido nuevoContenido;
 
@@ -142,6 +142,13 @@ public class AnalizadorLexico {
                         listaTokens.add(nuevoToken);
                         auxTokens.add(nuevoToken);
                         //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
+                    } else if ( lexemas[i-1].equals("PARA") && nombreProcedimiento.esIdentificador(lexemas[i])) { 
+                        System.out.println("Es un nombre de procedimiento " + lexemas[i]);
+                        nuevoToken = new Token(lexemas[i], Token.Tipos.NOMBREPROCEDIMIENTO, linea, i);
+                        listaTokens.add(nuevoToken);
+                        auxTokens.add(nuevoToken);
+                        //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
+                        //linea = ++linea;
                     } else if (id.esIdentificador(lexemas[i])) { // && !existeLineaIniciaSinComando) {
                         System.out.println("Es un identificador " + lexemas[i]);
                         nuevoToken = new Token(lexemas[i], Token.Tipos.IDENTIFICADOR, linea, i);

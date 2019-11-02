@@ -93,7 +93,11 @@ public class MiError {
         " ERROR 161: un comando de logo no puede ser usado como nombre de variable a declarar",
        " ERROR 162: un comando de hugo no puede ser usado como valor",
        " ERROR 163: un comando de logo no puede ser usado como valor",
-       " ERROR 164: la instruccion es invalida"
+       " ERROR 164: la instruccion es invalida",
+       " ERROR 165: la estructura del programa debe contener el comando FIN",
+       " ERROR 166: la estructura del programa debe finalizar con el comando FIN",
+       " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio",
+       " ERROR 168: la estructura del programa debe comenzar con el comando PARA"
 
     };
 
