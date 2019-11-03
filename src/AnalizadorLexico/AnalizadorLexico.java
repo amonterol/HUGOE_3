@@ -16,8 +16,6 @@ import java.nio.file.StandardOpenOption;
 
 import java.util.*;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -110,12 +108,15 @@ public class AnalizadorLexico {
 
                 String nuevoComentario = " ";
                 boolean comentarioEnLinea = false;
+                boolean existePara = false;
                 //boolean existeLineaIniciaSinComando = false;
 
                 //String noComando = "";
                 for (int i = 0; i < lexemas.length; ++i) {
                     System.out.println("66666-ESTE ES EL LEXEMA # " + i + " " + lexemas[i] + " LINEA " + linea);
-
+                    if(lexemas[i].equalsIgnoreCase("PARA")){
+                        existePara = true;
+                    }
                     if (comentarioEnLinea) {
                         nuevoComentario = nuevoComentario.concat(" ").concat(lexemas[i]);
                     } else if (lexemas[i].charAt(0) == ';') {
@@ -142,13 +143,14 @@ public class AnalizadorLexico {
                         listaTokens.add(nuevoToken);
                         auxTokens.add(nuevoToken);
                         //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
-                    } else if ( lexemas[i-1].equals("PARA") && nombreProcedimiento.esIdentificador(lexemas[i])) { 
-                        System.out.println("Es un nombre de procedimiento " + lexemas[i]);
-                        nuevoToken = new Token(lexemas[i], Token.Tipos.NOMBREPROCEDIMIENTO, linea, i);
-                        listaTokens.add(nuevoToken);
-                        auxTokens.add(nuevoToken);
-                        //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
-                        //linea = ++linea;
+                    } else if (existePara && nombreProcedimiento.esIdentificador(lexemas[i])) {
+                            System.out.println("Es un nombre de procedimiento " + lexemas[i]);
+                            nuevoToken = new Token(lexemas[i], Token.Tipos.NOMBREPROCEDIMIENTO, linea, i);
+                            listaTokens.add(nuevoToken);
+                            auxTokens.add(nuevoToken);
+                            //System.out.println("Se incluyo un nuevo token " + nuevoToken.getNombre());
+                            //linea = ++linea;
+                        
                     } else if (id.esIdentificador(lexemas[i])) { // && !existeLineaIniciaSinComando) {
                         System.out.println("Es un identificador " + lexemas[i]);
                         nuevoToken = new Token(lexemas[i], Token.Tipos.IDENTIFICADOR, linea, i);
@@ -177,7 +179,7 @@ public class AnalizadorLexico {
                                 auxTokens.add(nuevoToken);
                                 //El resto seria el resto de lexemas[i] menos el primer caracter o sea un entero o un posible identificador 
                                 String resto = lexemas[i].substring(1);
-                                System.out.println("Al quitar comillas queda " + resto );
+                                System.out.println("Al quitar comillas queda " + resto);
                                 if (Character.isDigit(resto.charAt(0))) {
                                     nuevoToken = esNumero(lexemas[i], linea, 2);
                                     listaTokens.add(nuevoToken);
@@ -388,7 +390,7 @@ public class AnalizadorLexico {
                             case '\n':
                                 break;
                             case ';':
-                                lexema += " ;";
+                                lexema += ";";
                                 break;
                             default:
                                 lexema += caracterActual;
