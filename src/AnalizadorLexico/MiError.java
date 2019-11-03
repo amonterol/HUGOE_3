@@ -95,9 +95,12 @@ public class MiError {
        " ERROR 163: un comando de logo no puede ser usado como valor",
        " ERROR 164: la instruccion es invalida",
        " ERROR 165: la estructura del programa debe contener el comando FIN",
-       " ERROR 166: la estructura del programa debe finalizar con el comando FIN",
+       " ERROR 166: la estructura requiere que este comando sea la ultima instruccion del programa",
        " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio",
-       " ERROR 168: la estructura del programa debe comenzar con el comando PARA"
+       " ERROR 168: la estructura del programa debe comenzar con el comando PARA",
+       " ERROR 169: el nombre del procedimiento no coincide con el nombre del archivo fuente",
+       " ERROR 170: solo puede existir una instruccion que comience con el comando FIN"
+            
 
     };
 

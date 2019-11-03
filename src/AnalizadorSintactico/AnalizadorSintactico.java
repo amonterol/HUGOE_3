@@ -26,14 +26,22 @@ import static java.util.Objects.isNull;
  */
 public class AnalizadorSintactico {
 
+    //Contiene la lista de tokens producida por el analizador lexico equivale a la tabla de simbolos
     private List<Token> listaTokens;
     private List<MiError> listaErrores;
+    //Contiene las lineas de instruccion  y sus errores, se utiliza para confeccional el archivo nombre-HUGO-errores.txt
     private List<LineaContenido> listaContenidoFinal;
+    //Contiene las lineas de instruccion sin errores, se utiliza para confeccional el archivo .lgo final
     private List<LineaContenido> listaContenidoFinalSinErrores;
+    //Ambos sirve para controlar la existencia y la cantidad de errores sintacticos y semanticos en las instrucciones
     boolean existenErroresEnArchivoOriginal = false;
     int numeroErroresEnArchivoOriginal = 0;
+    //Controla si estamos dentro del comando REPITE, el cual contiene su propia lista de instrucciones
+    //la cual debemos aislar para su analisis y no afectar la recurrencia del  while de analisis
     boolean estamosEnRepite = false;
+    //Contiene el nombre del archivo fuente
     String nombreArchivoOriginal;
+    //Controla las variables declaradas por medio del comando HAZ
     ArrayList<String> variablesDeclaradas = new ArrayList<>();
 
     public AnalizadorSintactico(AnalizadorLexico lexico, String nombreArchivoOriginal) {
@@ -65,7 +73,22 @@ public class AnalizadorSintactico {
         System.out.println("333333-AS- INICIA  NUEVA LISTA DE TOKENS****");
         listaTokens.forEach(item -> System.out.println(item.getNombre() + " <> " + item.getTipo() + " <> " + item.getLinea() + "<>" + item.getPosicion()));
         System.out.println("333333-AS- FINALIZA NUEVA LISTA DE TOKENS" + "\n");
+        int m = 0;
+        int lineaTknRepite = -1;
 
+        boolean existeFin = false;
+        boolean posicionFin = true;
+        //Controla la existencia del comando PARA y FIN pues solo puede existir una instruccion con estos comandos
+        boolean existeParaEnPosicionCorrecta = false;
+        boolean existeFinEnPosicionCorrecta = existeFinComoUltimaInstruccion();
+        int cantidad = cantidadComandosFin();
+        int posicionPara = 0;
+
+        boolean existeVariableDeclarada = false;
+        boolean existeCorIzqEnRepite = false;
+        boolean existeCorDerEnRepite = false;
+        boolean existeListaComandosEnRepite = false;
+        boolean existePonColorRelleno = false;
         //Revisa  que existen tokens que analizar
         if (!listaTokens.isEmpty()) {
             System.out.println("33333-AS-Entramos al if");
@@ -77,24 +100,9 @@ public class AnalizadorSintactico {
             //Recorrer listaTokens buscando PARA sino aparace -> error
             //Recorrer listaTokens buscando FIN sino aparece -> error
 
-            int m = 0;
-            int lineaTknRepite = -1;
-
-            boolean existeFin = false;
-            boolean posicionFin = posicionComandoFin();
-            boolean existePara = false;
-            int posicionPara = 0;
-
-            boolean existeVariableDeclarada = false;
-            boolean existeCorIzqEnRepite = false;
-            boolean existeCorDerEnRepite = false;
-            boolean existeListaComandosEnRepite = false;
-            boolean existePonColorRelleno = false;
             //Verifica si existen errores en el archivo fuente
-
             //Verificamos que el ultimo comando del programa se FIN
-            posicionFin = posicionComandoFin();
-
+            //posicionFin = posicionComandoFin();
             //Lista que contienen los errores presentes en cada linea del programa
             //utilizamos una exclusiva para el comando REPITE por cuanto este comando
             //contiene una lista de comandos HUGO, por lo cual merece un tratamiento diferente
@@ -111,30 +119,6 @@ public class AnalizadorSintactico {
             //Objeto con el cual se accede a la linea de contenido que se esta analizando 
             LineaContenido nuevoContenido = null;
 
-
-            /*
-            if (existeComandoFin()) {
-                if (posicionComandoFin()) {
-                    e = new MiError(linea, " ERROR 166: la estructura del programa debe finalizar con el comando FIN");
-                    erroresEncontrados.add(e);
-                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                    existenErroresEnArchivoOriginal = true;
-                    ++numeroErroresEnArchivoOriginal;
-                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                    System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                }
-            } else {
-                e = new MiError(linea, " ERROR 165: la estructura del programa debe contener el comando FIN");
-                erroresEncontrados.add(e);
-                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                existenErroresEnArchivoOriginal = true;
-                ++numeroErroresEnArchivoOriginal;
-                System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-            }
-             */
             while (!nuevaListaTokens.isEmpty()) {
 
                 System.out.println("\n" + "\n" + "\n" + "******EL TAMANIO DEL LA LISTA DE NUEVALISTATOKENSS ES " + nuevaListaTokens.size());
@@ -177,88 +161,259 @@ public class AnalizadorSintactico {
                         OUTER:
                         switch (tknActual.getNombre()) {
                             case "PARA":
-                                System.out.println("xxxxxxxx-AS-ESTAMOS EN PARA");
+                                System.out.println("parapara-AS-ESTAMOS EN PARA");
                                 //El primer comando debe ser PARA 
-                                //erroresEncontrados = new ArrayList<>();
                                 linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea() + "\n");
+                                System.out.println("parapara-AS-EL VALOR DE LINEA ES> " + linea + "TOKENACTUAL.GETLINEA ES IGUAL A " + tknActual.getLinea() + "\n");
 
+                                //Buscamos la instruccion correspondiente al token actual en el programa
                                 nuevoContenido = buscarInstruccion(tknActual);
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                                System.out.println("parapara-AS-LA POSICION DE PARA EN LISTA TOKENS ES> " + listaTokens.indexOf("PARA"));
-                                if (listaTokens.indexOf("PARA") == 0) {
-                                    e = new MiError(linea, " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio");
+                                System.out.println("parapara-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+
+                                System.out.println("parapara-AS-LA POSICION DE PARA EN LISTA TOKENS ES> " + listaTokens.indexOf(tknActual));
+                                //Verificamos que la posicion del comando PARA sea el inicio del procedimiento, sino => nuevo error
+                                if (!existeParaEnPosicionCorrecta) {
+                                    if (listaTokens.indexOf(tknActual) != 0) {
+                                        e = new MiError(linea, " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio");
+                                        erroresEncontrados.add(e);
+                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                        existenErroresEnArchivoOriginal = true;
+                                        ++numeroErroresEnArchivoOriginal;
+                                        System.out.println("parapara-AS-EL PROCEDIMIENTO NO INICIA CON PARA> " + e.toString());
+                                        System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                        System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                    } else {
+                                        //Al verficar que PARA es la instruccion inicial procedemos a verificar que el siguiente token sea el esperado
+                                        //Token esperado debe ser tipo IDENTIFICADOR 
+                                        existeParaEnPosicionCorrecta = true;
+                                        if (!nuevaListaTokens.isEmpty()) {
+                                            tknSigte = nuevaListaTokens.get(0);
+                                            if (tknSigte.getLinea() == linea) {
+                                                //Como esta en la misma linea de instruccion los removemos para analizarlo
+                                                tknActual = nuevaListaTokens.remove(0);
+                                                if (!tknActual.getTipo().equals(Tipos.NOMBREPROCEDIMIENTO)) {
+                                                    //El argumento de PARA es una nombre de procedimiento  NO es correcto, entonces verificamos que
+                                                    e = new MiError(linea, " ERROR 141: el nombre del programa debe ser un identificador valido");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    System.out.println("parapara-AS-EL NOMBRE DEL PROCEDIMIENTOS NO ES UN IDENTIFICADOR CORRECTO> " + e.toString());
+                                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                }
+                                                //Verificamos coincida con el nombre del archivo fuente con el nombre del procedimiento, sino => nuevo error
+                                                //Primero extraemos el nombre del archivo fuente quitandole la extension
+                                                int index = nombreArchivoOriginal.indexOf(".");
+                                                String nombreSinExtension = nombreArchivoOriginal.substring(0, index);
+                                                if (!tknActual.getNombre().equalsIgnoreCase(nombreSinExtension)) {
+                                                    e = new MiError(linea, " ERROR 169: el nombre del procedimiento no coincide con el nombre del archivo fuente");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    System.out.println("parapara-AS-EL NOMBRE DE  PROCEDIMIENTO NO COINCIDE CON NOMBRE ARCHIVO> " + e.toString());
+                                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                } else {
+                                    //Existe mas de un comando PARA => nuevo error
+                                    e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando PARA");
                                     erroresEncontrados.add(e);
                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                     existenErroresEnArchivoOriginal = true;
                                     ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("pppppp-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                    System.out.println("pppppp-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("pppppp-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                } else {
-                                    //Token siguiente esperado debe ser tipo IDENTIFICADOR 
-                                    if (!nuevaListaTokens.isEmpty()) {
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            if (!tknActual.getTipo().equals(Tipos.NOMBREPROCEDIMIENTO)) {
-                                                e = new MiError(linea, " ERROR 141: el nombre del programa debe ser un identificador valido");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("pppppp-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                System.out.println("pppppp-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("pppppp-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            }
-                                        }
-                                    }
+                                    System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
                                 }
-                                //nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                //Verificamos que la linea de instruccion no tenga errores y procedemos a incluir en una nueva lista
+                                //para la confeccion del archivo .lgo final
                                 if (!existenErroresEnArchivoOriginal) {
                                     listaContenidoFinalSinErrores.add(nuevoContenido);
                                 }
                                 break;
 
                             case "FIN":
+                                System.out.println("finfin-AS-ESTAMOS EN FIN");
                                 //El ultimo comando debe ser FIN
                                 linea = tknActual.getLinea();
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA ES> " + linea);
-                                System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
+                                System.out.println("parapara-AS-EL VALOR DE LINEA ES> " + linea + "TOKENACTUAL.GETLINEA ES IGUAL A " + tknActual.getLinea() + "\n");
+
+                                //Buscamos la instruccion correspondiente al token actual en el programa
                                 nuevoContenido = buscarInstruccion(tknActual);
-                                System.out.println("yyyyyyyyyyyyy-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
-                                existeFin = true;
-                                //erroresEncontrados = new ArrayList<MiError>();
-                                if (!posicionFin) {
-                                    //Si FIN esta en otra linea que no se la ultima programa no esta terminando con FIN
+                                System.out.println("finfin-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
+                                //existeFinEnPosicionCorrecta = posicionComandoFin();
+
+                                //Verificamos si existe un comando FIN en la ultima instruccion
+                                if (existeFinEnPosicionCorrecta) {
+                                    //Verificamos si existe mas de un comando FIN en el programa observando si la linea coincide con la ultima 
+                                    if (!lineaDelComandoFin(tknActual)) {
+                                        if (cantidad > 1) {
+                                            //Existe mas de un comando PARA => nuevo error
+                                            e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando FIN");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            --cantidad;
+                                            System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                            System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            //A continuacion verificamos sin el comando FIN encontrado tiene algun argumento => error 
+                                            if (!nuevaListaTokens.isEmpty()) {
+                                                tknSigte = nuevaListaTokens.get(0);
+                                                System.out.println("finfin-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                                                System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                                                //Revisamos si hay mas tokens en la misma linea => error
+                                                if (tknSigte.getLinea() == linea) {
+                                                    while (nuevaListaTokens.size() > 0 && tknSigte.getLinea() == linea) {
+                                                        tknActual = nuevaListaTokens.remove(0);
+                                                        if (nuevaListaTokens.size() > 0) {
+                                                            tknSigte = nuevaListaTokens.get(0);
+                                                        }
+                                                    }
+                                                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    this.existenErroresEnArchivoOriginal = true;
+                                                    ++this.numeroErroresEnArchivoOriginal;
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                }
+                                            }
+                                        } else {
+                                            //Es el ultimo FIN
+                                        }
+
+                                    } else {
+                                        //Encontramos el comando FIN de la ultima linea, entonces revisamos si tiene algun argumento => error
+                                        if (!nuevaListaTokens.isEmpty()) {
+                                            tknSigte = nuevaListaTokens.get(0);
+                                            System.out.println("finfin-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                                            System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                                            //Revisamos si hay mas tokens en la misma linea => error
+                                            if (tknSigte.getLinea() == linea) {
+                                                while (nuevaListaTokens.size() > 0 && tknSigte.getLinea() == linea) {
+                                                    tknActual = nuevaListaTokens.remove(0);
+                                                    if (nuevaListaTokens.size() > 0) {
+                                                        tknSigte = nuevaListaTokens.get(0);
+                                                    }
+                                                }
+                                                e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                this.existenErroresEnArchivoOriginal = true;
+                                                ++this.numeroErroresEnArchivoOriginal;
+                                                System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                                System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            }
+                                        }
+                                    }
+
+                                } else {
+                                    //No  hay un comando FIN en la ultima instruccion, pero podri haber mas de una instruccion con el comando
+                                    //Asi que verificamos la linea de cada uno
+                                    if (!lineaDelComandoFin(tknActual)) {
+                                        if (cantidad > 1) {
+                                            //Existe mas de un comando PARA => nuevo error
+                                            e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando PARA PARA");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            --cantidad;
+                                            System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                            System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            //A continuacion verificamos sin el comando FIN encontrado tiene algun argumento => error 
+                                            if (!nuevaListaTokens.isEmpty()) {
+                                                tknSigte = nuevaListaTokens.get(0);
+                                                System.out.println("finfin-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                                                System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                                                //Revisamos si hay mas tokens en la misma linea => error
+                                                if (tknSigte.getLinea() == linea) {
+                                                    while (nuevaListaTokens.size() > 0 && tknSigte.getLinea() == linea) {
+                                                        tknActual = nuevaListaTokens.remove(0);
+                                                        if (nuevaListaTokens.size() > 0) {
+                                                            tknSigte = nuevaListaTokens.get(0);
+                                                        }
+                                                    }
+                                                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    this.existenErroresEnArchivoOriginal = true;
+                                                    ++this.numeroErroresEnArchivoOriginal;
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                }
+                                            }
+
+                                        } else {
+                                            //Es el ultimo comando FIN y no esta en la ultima linea => ERROR
+                                            e = new MiError(linea, " ERROR 166: la estructura requiere que este comando sea la ultima instruccion del programa");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("finfin-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                            System.out.println("finfin-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("finfin-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            if (!nuevaListaTokens.isEmpty()) {
+                                                tknSigte = nuevaListaTokens.get(0);
+                                                System.out.println("finfin-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                                                System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                                                //Revisamos si hay mas tokens en la misma linea => error
+                                                if (tknSigte.getLinea() == linea) {
+                                                    while (nuevaListaTokens.size() > 0 && tknSigte.getLinea() == linea) {
+                                                        tknActual = nuevaListaTokens.remove(0);
+                                                        if (nuevaListaTokens.size() > 0) {
+                                                            tknSigte = nuevaListaTokens.get(0);
+                                                        }
+                                                    }
+                                                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    this.existenErroresEnArchivoOriginal = true;
+                                                    ++this.numeroErroresEnArchivoOriginal;
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                                                    System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+
+
+                                /*
+                                
+                                   } else {
+                                    //Si FIN esta en otra linea que no se la  ultima instruccion del  programa => no esta terminando con FIN => error
                                     e = new MiError(linea, " ERROR 142: el programa debe finalizar con el comando FIN");
                                     erroresEncontrados.add(e);
                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                     existenErroresEnArchivoOriginal = true;
                                     ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                    System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                    System.out.println("finfin-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                    System.out.println("finfin-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                    System.out.println("finfin-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                    //Existe mas de un comando PARA => nuevo error
+                                    e = new MiError(linea, " ERROR 171: solo puede existir una instruccion que comience con el comando FIN");
+                                    erroresEncontrados.add(e);
+                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                    existenErroresEnArchivoOriginal = true;
+                                    ++numeroErroresEnArchivoOriginal;
+                                    System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                 }
-
-                                //Revisamos si comando FIN tiene algun argumento 
-                                if (!nuevaListaTokens.isEmpty()) {
-                                    tknActual = nuevaListaTokens.remove(0);
-                                    System.out.println("zzzzzzzzzzzzz-AS-EL VALOR DE LINEA DEL TOKENACTUAL ES> " + tknActual.getLinea());
-                                    //Verificamos si hay un token en la misma linea de FIN
-                                    if (tknSigte.getLinea() == tknActual.getLinea()) {
-                                        e = new MiError(linea, " ERROR 111: la funcion no admite argumentos");
-                                        erroresEncontrados.add(e);
-                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                        existenErroresEnArchivoOriginal = true;
-                                        ++numeroErroresEnArchivoOriginal;
-                                        System.out.println("ffffff-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                        System.out.println("ffffff-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                        System.out.println("ffffff-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                    }
-                                }
+                                 */
                                 if (!existenErroresEnArchivoOriginal) {
                                     listaContenidoFinalSinErrores.add(nuevoContenido);
                                 }
@@ -343,41 +498,19 @@ public class AnalizadorSintactico {
                                     System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                 }
 
-                                if (!posicionFin) {
-                                    e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    existenErroresEnArchivoOriginal = true;
-                                    ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
-                                } else {
-                                    if (!nuevaListaTokens.isEmpty()) {
-                                        //Como estamos dentro del comando HAZ esperamos que el siguiente token sea de tipo OPERADOR DECLARACION (")
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        //Revisamos que sigamos en la misma linea de HAZ
-                                        if (tknSigte.getLinea() == linea) {
-                                            // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (tknActual.getTipo().equals(Tipos.DECLARACION)) {
-                                                //El tokenActual es tipo esperado, por lo tanto solo lo aceptamos y seguimos adelante
-                                            } else {
-                                                //Como el token no coincide con el esperado entonces existe un error
-                                                e = new MiError(linea, " ERROR 119: falta el operador de declaracion de variables ( \" )");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            }
+                                if (!nuevaListaTokens.isEmpty()) {
+                                    //Como estamos dentro del comando HAZ esperamos que el siguiente token sea de tipo OPERADOR DECLARACION (")
+                                    tknSigte = nuevaListaTokens.get(0);
+                                    //Revisamos que sigamos en la misma linea de HAZ
+                                    if (tknSigte.getLinea() == linea) {
+                                        // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
+                                        tknActual = nuevaListaTokens.remove(0);
+                                        System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                        if (tknActual.getTipo().equals(Tipos.DECLARACION)) {
+                                            //El tokenActual es tipo esperado, por lo tanto solo lo aceptamos y seguimos adelante
                                         } else {
-                                            //Como el token siguiente no esta en la misma linea => que el comando HAZ no tiene argumentos => ERROR
-                                            e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                            //Como el token no coincide con el esperado entonces existe un error
+                                            e = new MiError(linea, " ERROR 119: falta el operador de declaracion de variables ( \" )");
                                             erroresEncontrados.add(e);
                                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                             existenErroresEnArchivoOriginal = true;
@@ -385,59 +518,35 @@ public class AnalizadorSintactico {
                                             System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
                                             System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            break;
-
                                         }
+                                    } else {
+                                        //Como el token siguiente no esta en la misma linea => que el comando HAZ no tiene argumentos => ERROR
+                                        e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                        erroresEncontrados.add(e);
+                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                        existenErroresEnArchivoOriginal = true;
+                                        ++numeroErroresEnArchivoOriginal;
+                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                        System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        break;
 
-                                        //Token esperado debe ser tipo IDENTIFICADOR o nombre de la variable  
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        System.out.println("hhhhhh-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
-                                        //Revisamos que sigamos en la misma linea
-                                        if (tknSigte.getLinea() == linea) {
-                                            // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                //Encontramos el token esperado, al ser IDENTIFICADOR, debemos verificar  no haya sido declarado antes
-                                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                                if (existeVariableDeclarada) {
-                                                    //El identificador existe por lo tanto no puede ser usado nuevante, lanzamos un error
-                                                    e = new MiError(linea, " ERROR 122: la variable fue definida previamente");
-                                                    erroresEncontrados.add(e);
-                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                    existenErroresEnArchivoOriginal = true;
-                                                    ++numeroErroresEnArchivoOriginal;
-                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                    System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                } else {
-                                                    //El identificador no existe en las variablesDeclaradas => es nuevaVariable
-                                                    nuevaVariable = tknActual.getNombre();
-                                                    //Sin embargo, no podemos meterlo en las variables declaradas hasta ver si le asignaron un valor entero  u otro identificador
-                                                    System.out.println("hhhhhh-AS-TENEMOS UNA NUEVA POSIBLE VARIABLE> " + nuevaVariable);
-                                                    //variablesDeclaradas.add(nuevaVariable);
-                                                }
-                                                //Como el token no es el esperado tratamos de idenficar su tipo para dar mas detalle al mensaje de error    
-                                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                                e = new MiError(linea, " ERROR 158: un color valido no puede ser utilizado como nombre de variable a declarar");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                                e = new MiError(linea, " ERROR 159: un comando de hugo no puede ser como nombre de variable");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                                e = new MiError(linea, " ERROR 161: un comando de logo no puede ser usado como nombre de variable");
+                                    }
+
+                                    //Token esperado debe ser tipo IDENTIFICADOR o nombre de la variable  
+                                    tknSigte = nuevaListaTokens.get(0);
+                                    System.out.println("hhhhhh-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+                                    //Revisamos que sigamos en la misma linea
+                                    if (tknSigte.getLinea() == linea) {
+                                        // Como sigue siendo un argumento de HAZ lo removemos de la lista de tokens para analizarlo
+                                        tknActual = nuevaListaTokens.remove(0);
+                                        System.out.println("hhhhhh-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                                        if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                                            //Encontramos el token esperado, al ser IDENTIFICADOR, debemos verificar  no haya sido declarado antes
+                                            existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                                            if (existeVariableDeclarada) {
+                                                //El identificador existe por lo tanto no puede ser usado nuevante, lanzamos un error
+                                                e = new MiError(linea, " ERROR 122: la variable fue definida previamente");
                                                 erroresEncontrados.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                 existenErroresEnArchivoOriginal = true;
@@ -446,18 +555,15 @@ public class AnalizadorSintactico {
                                                 System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                                 System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                             } else {
-                                                e = new MiError(linea, " ERROR 136: el nombre de variable no es valido");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                //El identificador no existe en las variablesDeclaradas => es nuevaVariable
+                                                nuevaVariable = tknActual.getNombre();
+                                                //Sin embargo, no podemos meterlo en las variables declaradas hasta ver si le asignaron un valor entero  u otro identificador
+                                                System.out.println("hhhhhh-AS-TENEMOS UNA NUEVA POSIBLE VARIABLE> " + nuevaVariable);
+                                                //variablesDeclaradas.add(nuevaVariable);
                                             }
-                                        } else {
-                                            //Como el token siguiente no esta en la misma linea del comando HAZ => no se incluyeron argumentos
-                                            e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                            //Como el token no es el esperado tratamos de idenficar su tipo para dar mas detalle al mensaje de error    
+                                        } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                                            e = new MiError(linea, " ERROR 158: un color valido no puede ser utilizado como nombre de variable a declarar");
                                             erroresEncontrados.add(e);
                                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                             existenErroresEnArchivoOriginal = true;
@@ -465,104 +571,102 @@ public class AnalizadorSintactico {
                                             System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
                                             System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            break;
-
+                                        } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                            e = new MiError(linea, " ERROR 159: un comando de hugo no puede ser como nombre de variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                                            e = new MiError(linea, " ERROR 161: un comando de logo no puede ser usado como nombre de variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else {
+                                            e = new MiError(linea, " ERROR 136: el nombre de variable no es valido");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                         }
+                                    } else {
+                                        //Como el token siguiente no esta en la misma linea del comando HAZ => no se incluyeron argumentos
+                                        e = new MiError(linea, " ERROR 153: la lista de argumentos esta incompleta, se require HAZ \"Nombre de la variable :Valor de la variable");
+                                        erroresEncontrados.add(e);
+                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                        existenErroresEnArchivoOriginal = true;
+                                        ++numeroErroresEnArchivoOriginal;
+                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                        System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        break;
 
-                                        //Token esperado debe ser  ENTERO o un OPERADOR DE ASIGNACION
-                                        tknSigte = nuevaListaTokens.get(0);
-                                        System.out.println("cCcAE-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
-                                        System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                                        //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                                        if (tknSigte.getLinea() == linea) {
-                                            //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                                            tknActual = nuevaListaTokens.remove(0);
-                                            System.out.println("cCcAE-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
-                                            if (tknActual.getTipo().equals(Tipos.ENTERO)) {
-                                                //Como el token encontrado es tipo ENTERO solo lo aceptamos y declaramos la variable incluyendo en la 
-                                                //lista de variablesDeclaradas
-                                                variablesDeclaradas.add(nuevaVariable);
+                                    }
 
-                                            } else if (tknActual.getTipo().equals(Tipos.REAL)) {
-                                                e = new MiError(linea, " ERROR 132: se require un argumento entero");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 5> " + e.toString());
-                                                System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 6> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
-                                                //Encontramos el token de asignacion => el argumento del comando es una variable declarada
-                                                //lo aceptamos y seguimos a revisar el siguiente token
-                                                //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
-                                                tknSigte = nuevaListaTokens.get(0);
-                                                //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                                                if (tknSigte.getLinea() == linea) {
-                                                    //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                                                    tknActual = nuevaListaTokens.remove(0);
-                                                    //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
-                                                    if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                                        //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
-                                                        //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
-                                                        existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                                        if (!existeVariableDeclarada) {
-                                                            //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
-                                                            e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                                            erroresEncontrados.add(e);
-                                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                            existenErroresEnArchivoOriginal = true;
-                                                            ++numeroErroresEnArchivoOriginal;
-                                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                            System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                        } else {
-                                                            //Como la variable de asignacion utilizada ya habia sido declrada antes puede utilizarse 
-                                                            //en la declaracion de la nuevaVariable, por lo tanto la agregamos a las variablesDeclaradas
-                                                            variablesDeclaradas.add(nuevaVariable);
-                                                        }
-                                                    } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                                        e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+                                    //Token esperado debe ser  ENTERO o un OPERADOR DE ASIGNACION
+                                    tknSigte = nuevaListaTokens.get(0);
+                                    System.out.println("cCcAE-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+                                    System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+                                    //Verificamos si el tokenSiguiente esta en la misma linea del comando
+                                    if (tknSigte.getLinea() == linea) {
+                                        //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                                        tknActual = nuevaListaTokens.remove(0);
+                                        System.out.println("cCcAE-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                                        if (tknActual.getTipo().equals(Tipos.ENTERO)) {
+                                            //Como el token encontrado es tipo ENTERO solo lo aceptamos y declaramos la variable incluyendo en la 
+                                            //lista de variablesDeclaradas
+                                            variablesDeclaradas.add(nuevaVariable);
+
+                                        } else if (tknActual.getTipo().equals(Tipos.REAL)) {
+                                            e = new MiError(linea, " ERROR 132: se require un argumento entero");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 5> " + e.toString());
+                                            System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 6> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
+                                            //Encontramos el token de asignacion => el argumento del comando es una variable declarada
+                                            //lo aceptamos y seguimos a revisar el siguiente token
+                                            //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
+                                            tknSigte = nuevaListaTokens.get(0);
+                                            //Verificamos si el tokenSiguiente esta en la misma linea del comando
+                                            if (tknSigte.getLinea() == linea) {
+                                                //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                                                tknActual = nuevaListaTokens.remove(0);
+                                                //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
+                                                if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                                                    //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
+                                                    //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
+                                                    existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                                                    if (!existeVariableDeclarada) {
+                                                        //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
+                                                        e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
                                                         erroresEncontrados.add(e);
                                                         nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                         existenErroresEnArchivoOriginal = true;
                                                         ++numeroErroresEnArchivoOriginal;
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                        System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                    } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                                        e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                                                        erroresEncontrados.add(e);
-                                                        existenErroresEnArchivoOriginal = true;
-                                                        ++numeroErroresEnArchivoOriginal;
-                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                        System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                    } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                                        e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                                                        erroresEncontrados.add(e);
-                                                        existenErroresEnArchivoOriginal = true;
-                                                        ++numeroErroresEnArchivoOriginal;
-                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                         System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
                                                         System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                                         System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                                     } else {
-                                                        //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
-                                                        System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                                                        e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
-                                                        erroresEncontrados.add(e);
-                                                        existenErroresEnArchivoOriginal = true;
-                                                        ++numeroErroresEnArchivoOriginal;
-                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                                        System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                                        System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                        //Como la variable de asignacion utilizada ya habia sido declrada antes puede utilizarse 
+                                                        //en la declaracion de la nuevaVariable, por lo tanto la agregamos a las variablesDeclaradas
+                                                        variablesDeclaradas.add(nuevaVariable);
                                                     }
-                                                } else {
-                                                    //
-                                                    e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
+                                                } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                                                    e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
                                                     erroresEncontrados.add(e);
                                                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                     existenErroresEnArchivoOriginal = true;
@@ -570,75 +674,115 @@ public class AnalizadorSintactico {
                                                     System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
                                                     System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                                     System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                                    e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                                                    erroresEncontrados.add(e);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                                                    e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                                                    erroresEncontrados.add(e);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                } else {
+                                                    //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
+                                                    System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                                                    e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
+                                                    erroresEncontrados.add(e);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                                    System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                                 }
-                                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                this.existenErroresEnArchivoOriginal = true;
-                                                ++this.numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                this.existenErroresEnArchivoOriginal = true;
-                                                ++this.numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                this.existenErroresEnArchivoOriginal = true;
-                                                ++this.numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                this.existenErroresEnArchivoOriginal = true;
-                                                ++this.numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                            } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                this.existenErroresEnArchivoOriginal = true;
-                                                ++this.numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                                e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                                                erroresEncontrados.add(e);
-                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                                existenErroresEnArchivoOriginal = true;
-                                                ++numeroErroresEnArchivoOriginal;
-                                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                                             } else {
-                                                //Como el token no era entero, se espera el uso de una variable declarada, por lo tanto debe estar el operador de asignacion (:)
-                                                e = new MiError(linea, " ERROR 134: falta el operador de asignacion (:) para poder utilizar una variable");
+                                                //
+                                                e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
                                                 erroresEncontrados.add(e);
                                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                                 existenErroresEnArchivoOriginal = true;
                                                 ++numeroErroresEnArchivoOriginal;
-
                                                 System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
                                                 System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                                                 System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
                                             }
+                                        } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                                            e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            this.existenErroresEnArchivoOriginal = true;
+                                            ++this.numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            this.existenErroresEnArchivoOriginal = true;
+                                            ++this.numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                                            e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            this.existenErroresEnArchivoOriginal = true;
+                                            ++this.numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            this.existenErroresEnArchivoOriginal = true;
+                                            ++this.numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                                            e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            this.existenErroresEnArchivoOriginal = true;
+                                            ++this.numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        } else {
+                                            //Como el token no era entero, se espera el uso de una variable declarada, por lo tanto debe estar el operador de asignacion (:)
+                                            e = new MiError(linea, " ERROR 134: falta el operador de asignacion (:) para poder utilizar una variable");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                            System.out.println("hhhhhh-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("hhhhhh-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
                                         }
+
                                     }
                                 }
+
                                 System.out.println("hhhhhh-AS-INICIA LISTA CONTENIDO SIN ERRORES>  " + existenErroresEnArchivoOriginal);
                                 if (!existenErroresEnArchivoOriginal) {
                                     listaContenidoFinalSinErrores.add(nuevoContenido);
@@ -892,6 +1036,7 @@ public class AnalizadorSintactico {
                         } //fin del switch dentro del case COMANDOHUGO
                         break;
                     // fin case  COMANDOHUGO
+
                     case "COMANDOLOGO":
                         switch (tknActual.getNombre()) {
                             case "ABIERTOS":
@@ -1756,12 +1901,18 @@ public class AnalizadorSintactico {
 
         LineaContenido nuevoContenidoPara = new LineaContenido();
         Token primerToken = listaTokens.get(0);
+
         primerToken.getLinea();
-        nuevoContenidoPara.setLinea(0);
-        nuevoContenidoPara.setInstruccion("");
+
+        nuevoContenidoPara.setLinea(
+                0);
+        nuevoContenidoPara.setInstruccion(
+                "");
 
         List<MiError> erroresPara = new ArrayList<>();
-        if (!primerToken.getNombre().equals("PARA")) {
+
+        if (!primerToken.getNombre()
+                .equals("PARA")) {
             MiError ePara = new MiError(primerToken.getLinea(), "ERROR 140: el programa debe iniciar con el comando PARA");
             erroresPara.add(ePara);
             nuevoContenidoPara.setErroresEncontrados(erroresPara);
@@ -1773,14 +1924,14 @@ public class AnalizadorSintactico {
             System.out.println("despuesWhile-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
         }
 
-        LineaContenido nuevoContenidoFin = new LineaContenido();
-        Token ultimoToken = listaTokens.get(listaTokens.size() - 1);
+        if (!existeFinEnPosicionCorrecta) {
+            LineaContenido nuevoContenidoFin = new LineaContenido();
+            Token ultimoToken = listaTokens.get(listaTokens.size() - 1);
+            List<MiError> erroresFin = new ArrayList<>();
+            
+            nuevoContenidoFin.setLinea(ultimoToken.getLinea() + 1);
+            nuevoContenidoFin.setInstruccion("");
 
-        nuevoContenidoFin.setLinea(ultimoToken.getLinea() + 1);
-        nuevoContenidoFin.setInstruccion("");
-
-        List<MiError> erroresFin = new ArrayList<>();
-        if (!ultimoToken.getNombre().equals("FIN")) {
             MiError eFin = new MiError(ultimoToken.getLinea() + 1, " ERROR 142: el programa debe finalizar con el comando FIN");
             erroresFin.add(eFin);
             nuevoContenidoFin.setErroresEncontrados(erroresFin);
@@ -1790,9 +1941,10 @@ public class AnalizadorSintactico {
             System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA > " + eFin.toString());
             System.out.println("despuesWhile-AS-EL PRIMER TOKEN NO ES PARA, LOS ERRORES SON > " + nuevoContenidoFin.getErroresEncontrados());
             System.out.println("despuesWhile-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-        }
 
-        System.out.println("22222-AS- SALIENDO DEL SINTACTICOINICIA  LISTA CONTENIDO FINAL****");
+        }
+        System.out.println(
+                "22222-AS- SALIENDO DEL SINTACTICOINICIA  LISTA CONTENIDO FINAL****");
         for (int i = 0;
                 i < listaContenidoFinal.size();
                 ++i) {
@@ -1808,9 +1960,11 @@ public class AnalizadorSintactico {
             }
         }
 
-        System.out.println("22222-AS-SALIENDO DEL SINTACTICO - FINALIZA LISTA DE CONTENIDO FINAL" + "\n");
+        System.out.println(
+                "22222-AS-SALIENDO DEL SINTACTICO - FINALIZA LISTA DE CONTENIDO FINAL" + "\n");
 
-        System.out.println("22222-AS- SALIENDO DEL SINTACTICO INICIA  LISTA CONTENIDO FINAL SIN ERRORES****");
+        System.out.println(
+                "22222-AS- SALIENDO DEL SINTACTICO INICIA  LISTA CONTENIDO FINAL SIN ERRORES****");
         for (int i = 0;
                 i < listaContenidoFinalSinErrores.size();
                 ++i) {
@@ -1827,9 +1981,12 @@ public class AnalizadorSintactico {
             }
         }
 
-        System.out.println("22222-AS-SALIENDO DEL SINTACTICO - FINALIZA LISTA DE CONTENIDO FINAL SIN ERRORES" + "\n");
-        System.out.println("22222-AS-ANTES DE SALIR DEL SINTACTICO VERIFICAMOS SI EXISTEN O NO ERRORES" + "\n" + existenErroresEnArchivoOriginal);
-        System.out.println("22222-AS-ANTES DE SALIR DEL SINTACTICO VERIFICAMOS SI EXISTEN O NO ERRORES" + "\n" + numeroErroresEnArchivoOriginal);
+        System.out.println(
+                "22222-AS-SALIENDO DEL SINTACTICO - FINALIZA LISTA DE CONTENIDO FINAL SIN ERRORES" + "\n");
+        System.out.println(
+                "22222-AS-ANTES DE SALIR DEL SINTACTICO VERIFICAMOS SI EXISTEN O NO ERRORES" + "\n" + existenErroresEnArchivoOriginal);
+        System.out.println(
+                "22222-AS-ANTES DE SALIR DEL SINTACTICO VERIFICAMOS SI EXISTEN O NO ERRORES" + "\n" + numeroErroresEnArchivoOriginal);
         //Control si existen o no errores en el archivo fuente
         if (numeroErroresEnArchivoOriginal
                 > 0) {
@@ -1863,102 +2020,83 @@ public class AnalizadorSintactico {
 
         System.out.println("cCcAE-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
-
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token esperado debe ser  ENTERO o un OPERADOR DE ASIGNACION
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("cCcAE-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
-                System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                if (tknSigte.getLinea() == linea) {
-                    //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                    tknActual = nuevaListaTokens.remove(0);
-                    System.out.println("cCcAE-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
-                    if (tknActual.getTipo().equals(Tipos.ENTERO)) {
-                        //Como el token encontrado es tipo ENTERO solo lo aceptamos y seguimos adelante con la nueva linea del programa
-                    } else if (tknActual.getTipo().equals(Tipos.REAL)) {
-                        e = new MiError(linea, " ERROR 132: se require un argumento entero");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        existenErroresEnArchivoOriginal = true;
-                        ++numeroErroresEnArchivoOriginal;
-                        System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 5> " + e.toString());
-                        System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 6> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                    } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
-                        //Encontramos el token de asignacion => el argumento del comando es una variable declarada
-                        //lo aceptamos y seguimos a revisar el siguiente token
-                        //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
-                        tknSigte = nuevaListaTokens.get(0);
-                        //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                        if (tknSigte.getLinea() == linea) {
-                            //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                            tknActual = nuevaListaTokens.remove(0);
-                            //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
-                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
-                                //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
-                                existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                if (!existeVariableDeclarada) {
-                                    //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
-                                    e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    this.existenErroresEnArchivoOriginal = true;
-                                    ++this.numeroErroresEnArchivoOriginal;
-                                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
-                                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                                }
-                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token esperado debe ser  ENTERO o un OPERADOR DE ASIGNACION
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("cCcAE-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+            System.out.println("cCcAE-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+            //Verificamos si el tokenSiguiente esta en la misma linea del comando
+            if (tknSigte.getLinea() == linea) {
+                //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                tknActual = nuevaListaTokens.remove(0);
+                System.out.println("cCcAE-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                if (tknActual.getTipo().equals(Tipos.ENTERO)) {
+                    //Como el token encontrado es tipo ENTERO solo lo aceptamos y seguimos adelante con la nueva linea del programa
+                } else if (tknActual.getTipo().equals(Tipos.REAL)) {
+                    e = new MiError(linea, " ERROR 132: se require un argumento entero");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    existenErroresEnArchivoOriginal = true;
+                    ++numeroErroresEnArchivoOriginal;
+                    System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 5> " + e.toString());
+                    System.out.println("rrrrrr-AS-HAYAMOS UN ERROR 6> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("rrrrrr-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
+                    //Encontramos el token de asignacion => el argumento del comando es una variable declarada
+                    //lo aceptamos y seguimos a revisar el siguiente token
+                    //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
+                    tknSigte = nuevaListaTokens.get(0);
+                    //Verificamos si el tokenSiguiente esta en la misma linea del comando
+                    if (tknSigte.getLinea() == linea) {
+                        //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                        tknActual = nuevaListaTokens.remove(0);
+                        //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
+                        if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                            //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
+                            //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
+                            existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                            if (!existeVariableDeclarada) {
+                                //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
+                                e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
                                 erroresEncontrados.add(e);
                                 nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                 this.existenErroresEnArchivoOriginal = true;
                                 ++this.numeroErroresEnArchivoOriginal;
-                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                this.existenErroresEnArchivoOriginal = true;
-                                ++this.numeroErroresEnArchivoOriginal;
-                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else {
-                                //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
-                                System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                                e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
-                                erroresEncontrados.add(e);
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                this.existenErroresEnArchivoOriginal = true;
-                                ++this.numeroErroresEnArchivoOriginal;
-                                System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                                System.out.println("cCcAE-AS-HAYAMOS UN ERROR2 falta corchete derecho> " + e.toString());
                                 System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                                 System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                             }
+                        } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                            e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+                            erroresEncontrados.add(e);
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            this.existenErroresEnArchivoOriginal = true;
+                            ++this.numeroErroresEnArchivoOriginal;
+                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                            e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            this.existenErroresEnArchivoOriginal = true;
+                            ++this.numeroErroresEnArchivoOriginal;
+                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                            e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                            System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                         } else {
-                            //
-                            e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
+                            //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
+                            System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                            e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
                             erroresEncontrados.add(e);
                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
                             this.existenErroresEnArchivoOriginal = true;
@@ -1967,60 +2105,9 @@ public class AnalizadorSintactico {
                             System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                             System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                         }
-                    } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                        e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        this.existenErroresEnArchivoOriginal = true;
-                        ++this.numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                        e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        this.existenErroresEnArchivoOriginal = true;
-                        ++this.numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                    } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                        e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        this.existenErroresEnArchivoOriginal = true;
-                        ++this.numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                        e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        this.existenErroresEnArchivoOriginal = true;
-                        ++this.numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                    } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                        e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        this.existenErroresEnArchivoOriginal = true;
-                        ++this.numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                        e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                        erroresEncontrados.add(e);
-                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                        existenErroresEnArchivoOriginal = true;
-                        ++numeroErroresEnArchivoOriginal;
-                        System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
-                        System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                     } else {
-                        //Como el token no era entero, se espera el uso de una variable declarada, por lo tanto debe estar el operador de asignacion (:)
-                        e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                        //
+                        e = new MiError(linea, " Error 112: se require un argumento entero o una variable declarada previamente para este comando");
                         erroresEncontrados.add(e);
                         nuevoContenido.setErroresEncontrados(erroresEncontrados);
                         this.existenErroresEnArchivoOriginal = true;
@@ -2028,12 +2115,74 @@ public class AnalizadorSintactico {
                         System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
                         System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
                         System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
                     }
+                } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                    e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                    e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                    e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                    e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                    e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                    e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    existenErroresEnArchivoOriginal = true;
+                    ++numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                } else {
+                    //Como el token no era entero, se espera el uso de una variable declarada, por lo tanto debe estar el operador de asignacion (:)
+                    e = new MiError(linea, " ERROR 134: falta el operador de asignacion de poder utilizar una variable ya declarada");
+                    erroresEncontrados.add(e);
+                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                    this.existenErroresEnArchivoOriginal = true;
+                    ++this.numeroErroresEnArchivoOriginal;
+                    System.out.println("cCcAE-AS-HAYAMO UN ERROR1> " + e.toString());
+                    System.out.println("cCcAE-AS-HAYAMOS UN ERROR3 cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+                    System.out.println("cCcAE-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
                 }
-            } //fin if isEmpty
-        }
+
+            }
+        } //fin if isEmpty
+
         if (!existenErroresEnArchivoOriginal && !estamosEnRepite) {
             System.out.println("cCcAE-AGREGAMOS UN NUEVA LINEA A LA LISTA CONTENIDO FINAL SIN ERRORES> ");
             listaContenidoFinalSinErrores.add(nuevoContenido);
@@ -2061,34 +2210,26 @@ public class AnalizadorSintactico {
 
         System.out.println("ccsa-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
-
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token siguiente esperado -> NINGUNO 
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("ccsa-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
-                System.out.println("ccsa-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                //Revisamos si sigamos en la misma linea
-                if (tknSigte.getLinea() == linea) {
-                    while (tknSigte.getLinea() == linea) {
-                        tknActual = nuevaListaTokens.remove(0);
-                        tknSigte = nuevaListaTokens.get(0);
-                    }
-                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
-                    erroresEncontrados.add(e);
-                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                    this.existenErroresEnArchivoOriginal = true;
-                    ++this.numeroErroresEnArchivoOriginal;
-                    System.out.println("ccsa-AS-HAYAMOS UN ERROR3 -> " + e.toString());
-                    System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token siguiente esperado -> NINGUNO 
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("ccsa-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+            System.out.println("ccsa-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+            //Revisamos si sigamos en la misma linea
+            if (tknSigte.getLinea() == linea) {
+                while (tknSigte.getLinea() == linea) {
+                    tknActual = nuevaListaTokens.remove(0);
+                    tknSigte = nuevaListaTokens.get(0);
                 }
-                /*
+                e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                this.existenErroresEnArchivoOriginal = true;
+                ++this.numeroErroresEnArchivoOriginal;
+                System.out.println("ccsa-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+            }
+            /*
                 if (tknSigte.getLinea() == linea) {
                     //Como existe un nuevo token en la misma linea del comando lo removemos para analizarlo
                     tknActual = nuevaListaTokens.remove(0);
@@ -2103,9 +2244,9 @@ public class AnalizadorSintactico {
                     System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
 
                 }
-                 */
-            }
+             */
         }
+
         if (!existenErroresEnArchivoOriginal) {
             System.out.println("ccsa-ENTRAMOS A AGREGAR A LA LISTA SIN ERRORES -> ");
             listaContenidoFinalSinErrores.add(nuevoContenido);
@@ -2131,35 +2272,27 @@ public class AnalizadorSintactico {
         MiError e = new MiError();
         Token tknSigte = new Token();
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
-
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token siguiente esperado -> NINGUNO 
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("rellena-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
-                System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                //Revisamos si sigamos en la misma linea
-                if (tknSigte.getLinea() == linea) {
-                    while (tknSigte.getLinea() == linea) {
-                        tknActual = nuevaListaTokens.remove(0);
-                        tknSigte = nuevaListaTokens.get(0);
-                    }
-                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
-                    erroresEncontrados.add(e);
-                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                    this.existenErroresEnArchivoOriginal = true;
-                    ++this.numeroErroresEnArchivoOriginal;
-                    System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
-                    System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token siguiente esperado -> NINGUNO 
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("rellena-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+            System.out.println("rellena-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+            //Revisamos si sigamos en la misma linea
+            if (tknSigte.getLinea() == linea) {
+                while (tknSigte.getLinea() == linea) {
+                    tknActual = nuevaListaTokens.remove(0);
+                    tknSigte = nuevaListaTokens.get(0);
                 }
+                e = new MiError(linea, " Error 111: este comando no admite argumentos");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                this.existenErroresEnArchivoOriginal = true;
+                ++this.numeroErroresEnArchivoOriginal;
+                System.out.println("rellena-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                System.out.println("rellena-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
             }
         }
+
         //ESTA FUNCION NECESITA QUE ANTES SE HAYA FIJADO UN COLOR PARA EL RELLENO
         //USANDO LA FUNCION PONCOLORRELLENO -> PONCOLORRELLENO color/n/:variable
         System.out.println("rellena-AS-EL VALOR DE existePonColorRelleno -> " + existePonColorRelleno);
@@ -2197,107 +2330,84 @@ public class AnalizadorSintactico {
 
         System.out.println("poncolorrelleno-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
-            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-            System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token esperado debe ser tipo COLOR
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("poncolorrelleno-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+            //Revisamos que sigamos en la misma linea
+            if (tknSigte.getLinea() == linea) {
+                // Como sigue siendo un argumento de PONCOLORRELLENO lo removemos de la lista de tokens para analizarlo
+                tknActual = nuevaListaTokens.remove(0);
+                System.out.println("poncolorrelleno-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                    //El argumento corresponde a un color valido de HUGO => lo aceptamos
+                } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
+                    //Encontramos el token de asignacion => el argumento del comando es una variable ya declarada
+                    //lo aceptamos y seguimos a revisar el siguiente token
+                    //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
+                    tknSigte = nuevaListaTokens.get(0);
+                    //Verificamos si el tokenSiguiente esta en la misma linea del comando
+                    if (tknSigte.getLinea() == linea) {
+                        //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                        tknActual = nuevaListaTokens.remove(0);
+                        //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
+                        if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                            //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
+                            //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
+                            boolean existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                            if (!existeVariableDeclarada) {
+                                //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
+                                e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
+                                erroresEncontrados.add(e);
+                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                existenErroresEnArchivoOriginal = true;
+                                ++numeroErroresEnArchivoOriginal;
+                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token esperado debe ser tipo COLOR
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("poncolorrelleno-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
-                //Revisamos que sigamos en la misma linea
-                if (tknSigte.getLinea() == linea) {
-                    // Como sigue siendo un argumento de PONCOLORRELLENO lo removemos de la lista de tokens para analizarlo
-                    tknActual = nuevaListaTokens.remove(0);
-                    System.out.println("poncolorrelleno-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                    if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                        //El argumento corresponde a un color valido de HUGO => lo aceptamos
-                    } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
-                        //Encontramos el token de asignacion => el argumento del comando es una variable ya declarada
-                        //lo aceptamos y seguimos a revisar el siguiente token
-                        //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
-                        tknSigte = nuevaListaTokens.get(0);
-                        //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                        if (tknSigte.getLinea() == linea) {
-                            //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                            tknActual = nuevaListaTokens.remove(0);
-                            //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
-                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
-                                //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
-                                boolean existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                if (!existeVariableDeclarada) {
-                                    //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
-                                    e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    existenErroresEnArchivoOriginal = true;
-                                    ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                    System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
-                                }
-                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
-                                erroresEncontrados.add(e);
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else {
-                                //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
-                                System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                                e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                             }
-                        } else {
-                            e = new MiError(linea, " ERROR 128: se esperaba un identificador valido ");
+                        } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                            e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
                             erroresEncontrados.add(e);
                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                            this.existenErroresEnArchivoOriginal = true;
-                            ++this.numeroErroresEnArchivoOriginal;
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
                             System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
                             System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                             System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                            e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                            e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else {
+                            //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
+                            System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                            e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                         }
                     } else {
-                        System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                        e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                        e = new MiError(linea, " ERROR 128: se esperaba un identificador valido ");
                         erroresEncontrados.add(e);
                         nuevoContenido.setErroresEncontrados(erroresEncontrados);
                         this.existenErroresEnArchivoOriginal = true;
@@ -2305,9 +2415,9 @@ public class AnalizadorSintactico {
                         System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
                         System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                         System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+
                     }
                 } else {
-                    //No hay argumento en la funcion poncolorrelleno 
                     System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
                     e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
                     erroresEncontrados.add(e);
@@ -2318,9 +2428,21 @@ public class AnalizadorSintactico {
                     System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                     System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                 }
+            } else {
+                //No hay argumento en la funcion poncolorrelleno 
+                System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                this.existenErroresEnArchivoOriginal = true;
+                ++this.numeroErroresEnArchivoOriginal;
+                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                System.out.println("poncolorrelleno-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                System.out.println("poncolorrelleno-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+            }
 
-            } // fin de if lista vacia
-        } //fin if posicion fin
+        } // fin de if lista vacia
+
         if (!existenErroresEnArchivoOriginal) {
             System.out.println("poncolorlapiz-NO HAYAMOS ERRORES EN LA INSTRUCCION> ");
             String nombreColor = tknActual.getNombre();
@@ -2355,118 +2477,95 @@ public class AnalizadorSintactico {
 
         System.out.println("poncolorlapiz-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
-            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-            System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token esperado debe ser tipo COLOR
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("poncolorrelleno-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
+            //Revisamos que sigamos en la misma linea
+            if (tknSigte.getLinea() == linea) {
+                // Como sigue siendo un argumento de PONCOLORRELLENO lo removemos de la lista de tokens para analizarlo
+                tknActual = nuevaListaTokens.remove(0);
+                System.out.println("poncolorlapiz-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
+                if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                    //El argumento corresponde a un color valido de HUGO => lo aceptamos
+                } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
+                    //Encontramos el token de asignacion => el argumento del comando es una variable ya declarada
+                    //lo aceptamos y seguimos a revisar el siguiente token
+                    //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
+                    tknSigte = nuevaListaTokens.get(0);
+                    //Verificamos si el tokenSiguiente esta en la misma linea del comando
+                    if (tknSigte.getLinea() == linea) {
+                        //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
+                        tknActual = nuevaListaTokens.remove(0);
+                        //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
+                        if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
+                            //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
+                            //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
+                            boolean existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
+                            if (!existeVariableDeclarada) {
+                                //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
+                                e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
+                                erroresEncontrados.add(e);
+                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                existenErroresEnArchivoOriginal = true;
+                                ++numeroErroresEnArchivoOriginal;
+                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                                System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token esperado debe ser tipo COLOR
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("poncolorrelleno-AS-EL VALOR tknSgte> " + tknSigte.getNombre());
-                //Revisamos que sigamos en la misma linea
-                if (tknSigte.getLinea() == linea) {
-                    // Como sigue siendo un argumento de PONCOLORRELLENO lo removemos de la lista de tokens para analizarlo
-                    tknActual = nuevaListaTokens.remove(0);
-                    System.out.println("poncolorlapiz-AS-EL VALOR tknActual ES> " + tknActual.getNombre());
-                    if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                        //El argumento corresponde a un color valido de HUGO => lo aceptamos
-                    } else if (tknActual.getTipo().equals(Tipos.ASIGNACION)) {
-                        //Encontramos el token de asignacion => el argumento del comando es una variable ya declarada
-                        //lo aceptamos y seguimos a revisar el siguiente token
-                        //Token esperado debe ser NOMBRE DE VARIABLE ya declarada
-                        tknSigte = nuevaListaTokens.get(0);
-                        //Verificamos si el tokenSiguiente esta en la misma linea del comando
-                        if (tknSigte.getLinea() == linea) {
-                            //El token esta en la misma linea, por lo tanto, es un argumento del comando => removerlo para analisis
-                            tknActual = nuevaListaTokens.remove(0);
-                            //Verificamos si el tokenActual es del tipo IDENTIFICADOR o sea un nombre de variable
-                            if (tknActual.getTipo().equals(Tipos.IDENTIFICADOR)) {
-                                //Como es un nombre de variable debemos verificar que haya sido declarada con anteriormente
-                                //para ello consultamos el ArrayList de nombre "variablesDeclaradas"
-                                boolean existeVariableDeclarada = consultaVariablesDeclaradas(tknActual.getNombre(), linea, variablesDeclaradas);
-                                if (!existeVariableDeclarada) {
-                                    //La variable no ha sido declarada con anterioridad => no puede usarse => ERROR
-                                    e = new MiError(linea, " ERROR 123: la variable no ha sido declarada previamente");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    existenErroresEnArchivoOriginal = true;
-                                    ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                    System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
-                                }
-                            } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
-                                e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
-                                erroresEncontrados.add(e);
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
-                                e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                                e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-                            } else {
-                                //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
-                                System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                                e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
-                                erroresEncontrados.add(e);
-                                existenErroresEnArchivoOriginal = true;
-                                ++numeroErroresEnArchivoOriginal;
-                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
-                                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                                System.out.println("v-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                             }
-                        } else {
-                            e = new MiError(linea, " ERROR 128: se esperaba un identificador valido ");
+                        } else if (tknActual.getTipo().equals(Tipos.COLOR)) {
+                            e = new MiError(linea, " ERROR 160: un color valido no puede ser utilizado como valor de la variable");
                             erroresEncontrados.add(e);
                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                            this.existenErroresEnArchivoOriginal = true;
-                            ++this.numeroErroresEnArchivoOriginal;
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOHUGO)) {
+                            e = new MiError(linea, " ERROR 162: un comando de hugo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                            e = new MiError(linea, " ERROR 163: un comando de logo no puede ser usado como valor");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                            System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                            System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        } else {
+                            //El token encontrado no es del tipo IDENTIFICADOR => no es un nombre de variable valido
+                            System.out.println("cCcAE-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                            e = new MiError(linea, " ERROR 110: se require una variable o identificador valido");
+                            erroresEncontrados.add(e);
+                            existenErroresEnArchivoOriginal = true;
+                            ++numeroErroresEnArchivoOriginal;
+                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
                             System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
                             System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                             System.out.println("v-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
-
                         }
                     } else {
-                        System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
-                        e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                        e = new MiError(linea, " ERROR 128: se esperaba un identificador valido ");
                         erroresEncontrados.add(e);
                         nuevoContenido.setErroresEncontrados(erroresEncontrados);
                         this.existenErroresEnArchivoOriginal = true;
                         ++this.numeroErroresEnArchivoOriginal;
                         System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
                         System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
-                        System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                        System.out.println("v-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+
                     }
                 } else {
-                    //No hay argumento en la funcion poncolorrelleno 
-                    System.out.println("poncolorlapiz-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                    System.out.println("poncolorrelleno-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
                     e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
                     erroresEncontrados.add(e);
                     nuevoContenido.setErroresEncontrados(erroresEncontrados);
@@ -2476,9 +2575,21 @@ public class AnalizadorSintactico {
                     System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
                     System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
                 }
+            } else {
+                //No hay argumento en la funcion poncolorrelleno 
+                System.out.println("poncolorlapiz-AS-ENCONTRAMOS ERROR4> " + tknActual.getNombre() + " " + tknActual.getLinea());
+                e = new MiError(linea, " ERROR 137: la funcion requiere como argumento un color valido");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                this.existenErroresEnArchivoOriginal = true;
+                ++this.numeroErroresEnArchivoOriginal;
+                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 4> " + e.toString());
+                System.out.println("poncolorlapiz-AS-HAYAMOS UN ERROR 5> " + nuevoContenido.getErroresEncontrados());
+                System.out.println("poncolorlapiz-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+            }
 
-            } // fin de if lista vacia
-        } //fin if posicion fin
+        } // fin de if lista vacia
+
         if (!existenErroresEnArchivoOriginal) {
             System.out.println("poncolorlapiz-NO HAYAMOS ERRORES EN LA INSTRUCCION> ");
             String nombreColor = tknActual.getNombre();
@@ -2514,34 +2625,26 @@ public class AnalizadorSintactico {
 
         System.out.println("comandosLogo-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
-        if (!posicionFin) {
-            e = new MiError(linea, " ERROR 143: no se permiten mas comandos luego del comando FIN");
-            erroresEncontrados.add(e);
-            nuevoContenido.setErroresEncontrados(erroresEncontrados);
-            this.existenErroresEnArchivoOriginal = true;
-            ++this.numeroErroresEnArchivoOriginal;
+        if (!nuevaListaTokens.isEmpty()) {
+            //Token siguiente esperado -> NINGUNO 
+            tknSigte = nuevaListaTokens.get(0);
+            System.out.println("comandosLogo-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
+            System.out.println("comandosLogo-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
+            //Revisamos si sigamos en la misma linea
+            if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
+                //Encontramos un comando solo valido en logo
+                System.out.println("comandosLogo-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
+                e = new MiError(linea, " Advertencia: instrucción " + tknActual.getNombre() + " no es soportada por esta versión");
+                erroresEncontrados.add(e);
+                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                this.existenErroresEnArchivoOriginal = true;
+                ++this.numeroErroresEnArchivoOriginal;
+                System.out.println("comandosLogo-AS-HAYAMOS UN ERROR3 -> " + e.toString());
+                System.out.println("v-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
 
-        } else {
-            if (!nuevaListaTokens.isEmpty()) {
-                //Token siguiente esperado -> NINGUNO 
-                tknSigte = nuevaListaTokens.get(0);
-                System.out.println("comandosLogo-AS-EL TOKEN SIGUIENTE ES -> " + tknSigte.toString());
-                System.out.println("comandosLogo-AS-EL VALOR DE LINEA DEL TOKESIQUIENTE ES> " + tknSigte.getLinea());
-                //Revisamos si sigamos en la misma linea
-                if (tknActual.getTipo().equals(Tipos.COMANDOLOGO)) {
-                    //Encontramos un comando solo valido en logo
-                    System.out.println("comandosLogo-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
-                    e = new MiError(linea, " Advertencia: instrucción " + tknActual.getNombre() + " no es soportada por esta versión");
-                    erroresEncontrados.add(e);
-                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                    this.existenErroresEnArchivoOriginal = true;
-                    ++this.numeroErroresEnArchivoOriginal;
-                    System.out.println("comandosLogo-AS-HAYAMOS UN ERROR3 -> " + e.toString());
-                    System.out.println("v-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-
-                }
             }
         }
+
         if (!existenErroresEnArchivoOriginal) {
             listaContenidoFinalSinErrores.add(nuevoContenido);
         }
@@ -2611,9 +2714,120 @@ public class AnalizadorSintactico {
         return existeFin;
     }
 
-    public boolean posicionComandoFin() {
-        boolean posicionFin = listaTokens.get(listaTokens.size() - 1).getNombre().equals("FIN");
-        return posicionFin;
+    //Verifica que la posicion del comando FIN sea en la ultima instruccion
+    public boolean lineaDelComandoFin(Token tknActual) {
+
+        boolean finUltimaInstruccion;
+        /*
+        int index = -1; // = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
+        Token token = new Token();
+
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            token = (Token) iterator.next();
+            if (token.getNombre().equalsIgnoreCase("FIN")) {
+                index = listaTokens.lastIndexOf(token);
+                //break;
+            }
+        }
+         */
+        //index = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
+        //index = listaTokens.lastIndexOf(listaTokens.);
+        //Token fin = listaTokens.get(index);
+        Token ultimo = listaTokens.get(listaTokens.size() - 1);
+
+        //System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + index);
+        System.out.println("posicionComandoFin-EL TOKEN ACTUAL ES  -> " + tknActual.toString() + " y esta en la linea " + tknActual.getLinea());
+        System.out.println("posicionComandoFin-EL ULTIMO TOKEN ES -> " + ultimo.toString());
+        //Verificamos que la linea en la que esta la ultima ocurrencia de FIN es igual a la linea donde esta el ultimo token de la lista
+        //y que la posicion de ambos tokens en la linea sea la misma, de lo contrario hay argumentos en fin o hay mas tokens despues de FIN
+        finUltimaInstruccion = tknActual.getLinea() == ultimo.getLinea();
+        System.out.println("posicionComandoFin-EL VALOR DE POSICION ES-> " + finUltimaInstruccion);
+        //finUltimaInstruccion es true si fin esta en la ultima linea de instruccion, es decir, en la posicion correcta
+        //finUltimaInstruccion es false fin no esta en la ultima linea de instruccion, es decir, en una posicin incorrecta
+
+        return finUltimaInstruccion;
+    }
+
+    public boolean existeFinComoUltimaInstruccion() {
+
+        boolean ultimaInstruccionEsFin = false;
+
+        int index = -1; // = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
+        Token token = new Token();
+        Token fin = new Token();
+
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            token = (Token) iterator.next();
+            if (token.getNombre().equalsIgnoreCase("FIN")) {
+                index = listaTokens.lastIndexOf(token);
+                //break;
+            }
+        }
+
+        //index = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
+        //index = listaTokens.lastIndexOf(listaTokens.);
+        Token ultimo = listaTokens.get(listaTokens.size() - 1);
+        if (index != -1) {
+            fin = listaTokens.get(index);
+            ultimaInstruccionEsFin = fin.getLinea() == ultimo.getLinea();
+        }
+
+        //System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + index);
+        System.out.println("posicionComandoFin-EL TOKEN ACTUAL ES  -> " + fin.toString() + " y esta en la linea " + fin.getLinea());
+        System.out.println("posicionComandoFin-EL ULTIMO TOKEN ES -> " + ultimo.toString());
+        //Verificamos que la linea en la que esta la ultima ocurrencia de FIN es igual a la linea donde esta el ultimo token de la lista
+        //y que la posicion de ambos tokens en la linea sea la misma, de lo contrario hay argumentos en fin o hay mas tokens despues de FIN
+
+        System.out.println("posicionComandoFin-EL VALOR DE POSICION ES-> " + ultimaInstruccionEsFin);
+        //finUltimaInstruccion es true si fin esta en la ultima linea de instruccion, es decir, en la posicion correcta
+        //finUltimaInstruccion es false fin no esta en la ultima linea de instruccion, es decir, en una posicin incorrecta
+
+        return ultimaInstruccionEsFin;
+    }
+
+    public boolean finEsUltimoToken() {
+
+        boolean finUltimoToken;
+        int index = -1; // = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
+        Token token = new Token();
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            token = (Token) iterator.next();
+            if (token.getNombre().equalsIgnoreCase("FIN")) {
+                index = listaTokens.lastIndexOf(token);;
+                break;
+            }
+        }
+        Token fin = listaTokens.get(index);
+        Token ultimo = listaTokens.get(listaTokens.size() - 1);
+
+        System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + index);
+        System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + fin.toString());
+        System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + ultimo.toString());
+        //Verificamos que la linea en la que esta la ultima ocurrencia de FIN es igual a la linea donde esta el ultimo token de la lista
+        //y que la posicion de ambos tokens en la linea sea la misma, de lo contrario hay argumentos en fin o hay mas tokens despues de FIN
+        finUltimoToken = fin.getLinea() == ultimo.getLinea() && fin.getPosicion() == ultimo.getPosicion();
+        System.out.println("posicionComandoFin-EL VALOR DE POSICION ES-> " + finUltimoToken);
+        //posicionFin es true si fin esta en la ultima linea de instruccion, es decir, en la posicion correcta
+        //posicionFin es false fin no esta en la ultima linea de instruccion, es decir, en una posicin incorrecta
+
+        return finUltimoToken;
+    }
+
+    public int cantidadComandosFin() {
+        int cantidad = 0;
+        Token token = new Token();
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            token = (Token) iterator.next();
+            if (token.getNombre().equalsIgnoreCase("FIN")) {
+                ++cantidad;
+            }
+        }
+        System.out.println("posicionComandoFin-EXISTE UN TOTAL DE COMANDOS FIN IGUAL A -> " + cantidad);
+        return cantidad;
     }
 
     public boolean existeComandoPara() {
