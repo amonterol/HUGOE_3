@@ -79,9 +79,11 @@ public class AnalizadorSintactico {
         boolean existeFin = false;
         boolean posicionFin = true;
         //Controla la existencia del comando PARA y FIN pues solo puede existir una instruccion con estos comandos
-        boolean existeParaEnPosicionCorrecta = false;
+        //boolean existeParaEnPosicionCorrecta = false;
+        boolean existeParaEnPosicionCorrecta = existeParaComoPrimeraInstruccion();
         boolean existeFinEnPosicionCorrecta = existeFinComoUltimaInstruccion();
-        int cantidad = cantidadComandosFin();
+        int cantidadFin = cantidadComandosFin();
+        int cantidadPara = cantidadComandosPara();
         int posicionPara = 0;
 
         boolean existeVariableDeclarada = false;
@@ -171,21 +173,64 @@ public class AnalizadorSintactico {
                                 System.out.println("parapara-AS-EL VALOR NUEVOCONTENIDO ES> " + nuevoContenido.getInstruccion());
 
                                 System.out.println("parapara-AS-LA POSICION DE PARA EN LISTA TOKENS ES> " + listaTokens.indexOf(tknActual));
+
                                 //Verificamos que la posicion del comando PARA sea el inicio del procedimiento, sino => nuevo error
-                                if (!existeParaEnPosicionCorrecta) {
-                                    if (listaTokens.indexOf(tknActual) != 0) {
-                                        e = new MiError(linea, " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio");
-                                        erroresEncontrados.add(e);
-                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                        existenErroresEnArchivoOriginal = true;
-                                        ++numeroErroresEnArchivoOriginal;
-                                        System.out.println("parapara-AS-EL PROCEDIMIENTO NO INICIA CON PARA> " + e.toString());
-                                        System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
-                                        System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                if (existeParaEnPosicionCorrecta) {
+                                    //Verificamos si existe mas de un comando PARA en el programa observando si la linea coincide con la ultima 
+                                    if (!lineaDelComandoPara(tknActual)) {
+                                        if (cantidadPara > 1) {
+                                            //Existe mas de un comando PARA=> nuevo error
+                                            e = new MiError(linea, " ERROR 171: solo puede existir una instruccion que comience con el comando PARA");
+                                            erroresEncontrados.add(e);
+                                            nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                            existenErroresEnArchivoOriginal = true;
+                                            ++numeroErroresEnArchivoOriginal;
+                                            --cantidadPara;
+                                            System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                            System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                            System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                            //No verificamos el argumento, pues no puede haber mas de un para 
+
+                                        } else {
+                                            //Es el primer PARA
+                                            //Verificamos el argumento del comando que tiene que ser un nombre de procedimiento valiso y que coincida con el nombre del programa
+                                            if (!nuevaListaTokens.isEmpty()) {
+                                                tknSigte = nuevaListaTokens.get(0);
+                                                if (tknSigte.getLinea() == linea) {
+                                                    //Como esta en la misma linea de instruccion los removemos para analizarlo
+                                                    tknActual = nuevaListaTokens.remove(0);
+                                                    if (!tknActual.getTipo().equals(Tipos.NOMBREPROCEDIMIENTO)) {
+                                                        //El argumento de PARA es una nombre de procedimiento  NO es correcto, entonces verificamos que
+                                                        e = new MiError(linea, " ERROR 141: el nombre del programa debe ser un identificador valido");
+                                                        erroresEncontrados.add(e);
+                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                        existenErroresEnArchivoOriginal = true;
+                                                        ++numeroErroresEnArchivoOriginal;
+                                                        System.out.println("parapara-AS-EL NOMBRE DEL PROCEDIMIENTOS NO ES UN IDENTIFICADOR CORRECTO> " + e.toString());
+                                                        System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                        System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                    }
+                                                    //Verificamos coincida con el nombre del archivo fuente con el nombre del procedimiento, sino => nuevo error
+                                                    //Primero extraemos el nombre del archivo fuente quitandole la extension
+                                                    int index = nombreArchivoOriginal.indexOf(".");
+                                                    String nombreSinExtension = nombreArchivoOriginal.substring(0, index);
+                                                    if (!tknActual.getNombre().equalsIgnoreCase(nombreSinExtension)) {
+                                                        e = new MiError(linea, " ERROR 169: el nombre del procedimiento no coincide con el nombre del archivo fuente");
+                                                        erroresEncontrados.add(e);
+                                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                        existenErroresEnArchivoOriginal = true;
+                                                        ++numeroErroresEnArchivoOriginal;
+                                                        System.out.println("parapara-AS-EL NOMBRE DE  PROCEDIMIENTO NO COINCIDE CON NOMBRE ARCHIVO> " + e.toString());
+                                                        System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                        System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                    }
+                                                }
+                                            }
+                                        }
+
                                     } else {
-                                        //Al verficar que PARA es la instruccion inicial procedemos a verificar que el siguiente token sea el esperado
-                                        //Token esperado debe ser tipo IDENTIFICADOR 
-                                        existeParaEnPosicionCorrecta = true;
+                                        //Es el primer PARA
+                                        //Verificamos el argumento del comando que tiene que ser un nombre de procedimiento valiso y que coincida con el nombre del programa
                                         if (!nuevaListaTokens.isEmpty()) {
                                             tknSigte = nuevaListaTokens.get(0);
                                             if (tknSigte.getLinea() == linea) {
@@ -218,20 +263,80 @@ public class AnalizadorSintactico {
                                                 }
                                             }
                                         }
-
                                     }
-                                } else {
-                                    //Existe mas de un comando PARA => nuevo error
-                                    e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando PARA");
-                                    erroresEncontrados.add(e);
-                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                                    existenErroresEnArchivoOriginal = true;
-                                    ++numeroErroresEnArchivoOriginal;
-                                    System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
-                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
-                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
 
+                                    /*
+                                  
+                                     */
+                                } else {
+                                    if (posicionPara == 0) {
+                                        //Es el primer comando PARA y no esta en la primer linea => ERROR
+                                        e = new MiError(linea, " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio");
+                                        erroresEncontrados.add(e);
+                                        nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                        existenErroresEnArchivoOriginal = true;
+                                        ++numeroErroresEnArchivoOriginal;
+                                        System.out.println("parapara-AS-HAYAMOS UN PARA EN UNA LINEA DIFERENTE A LA PRIMERAERROR 4> " + e.toString());
+                                        System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                        System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                        --cantidadPara;
+                                        //Es el primer PARA
+                                        //Verificamos el argumento del comando que tiene que ser un nombre de procedimiento valiso y que coincida con el nombre del programa
+                                        if (!nuevaListaTokens.isEmpty()) {
+                                            tknSigte = nuevaListaTokens.get(0);
+                                            if (tknSigte.getLinea() == linea) {
+                                                //Como esta en la misma linea de instruccion los removemos para analizarlo
+                                                tknActual = nuevaListaTokens.remove(0);
+                                                if (!tknActual.getTipo().equals(Tipos.NOMBREPROCEDIMIENTO)) {
+                                                    //El argumento de PARA es una nombre de procedimiento  NO es correcto, entonces verificamos que
+                                                    e = new MiError(linea, " ERROR 141: el nombre del programa debe ser un identificador valido");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    System.out.println("parapara-AS-EL NOMBRE DEL PROCEDIMIENTOS NO ES UN IDENTIFICADOR CORRECTO> " + e.toString());
+                                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                }
+                                                //Verificamos coincida con el nombre del archivo fuente con el nombre del procedimiento, sino => nuevo error
+                                                //Primero extraemos el nombre del archivo fuente quitandole la extension
+                                                int index = nombreArchivoOriginal.indexOf(".");
+                                                String nombreSinExtension = nombreArchivoOriginal.substring(0, index);
+                                                if (!tknActual.getNombre().equalsIgnoreCase(nombreSinExtension)) {
+                                                    e = new MiError(linea, " ERROR 169: el nombre del procedimiento no coincide con el nombre del archivo fuente");
+                                                    erroresEncontrados.add(e);
+                                                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                    existenErroresEnArchivoOriginal = true;
+                                                    ++numeroErroresEnArchivoOriginal;
+                                                    System.out.println("parapara-AS-EL NOMBRE DE  PROCEDIMIENTO NO COINCIDE CON NOMBRE ARCHIVO> " + e.toString());
+                                                    System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                    System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                }
+
+                                            }
+                                        }
+                                        posicionPara = 1;
+                                    } else {
+                                        //Verificamos si existe mas de un comando PARA en el programa 
+                                        if (!lineaDelComandoPara(tknActual)) {
+                                            if (cantidadPara >=1) {
+                                                //Existe mas de un comando PARA=> nuevo error
+                                                e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando PARA");
+                                                erroresEncontrados.add(e);
+                                                nuevoContenido.setErroresEncontrados(erroresEncontrados);
+                                                existenErroresEnArchivoOriginal = true;
+                                                ++numeroErroresEnArchivoOriginal;
+                                                --cantidadPara;
+                                                System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
+                                                System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
+                                                System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
+                                                //No verificamos el argumento, pues no puede haber mas de un para 
+
+                                            }
+                                        }
+                                    }
                                 }
+                               
                                 //Verificamos que la linea de instruccion no tenga errores y procedemos a incluir en una nueva lista
                                 //para la confeccion del archivo .lgo final
                                 if (!existenErroresEnArchivoOriginal) {
@@ -254,14 +359,14 @@ public class AnalizadorSintactico {
                                 if (existeFinEnPosicionCorrecta) {
                                     //Verificamos si existe mas de un comando FIN en el programa observando si la linea coincide con la ultima 
                                     if (!lineaDelComandoFin(tknActual)) {
-                                        if (cantidad > 1) {
-                                            //Existe mas de un comando PARA => nuevo error
+                                        if (cantidadFin > 1) {
+                                            //Existe mas de un comando FIN=> nuevo error
                                             e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando FIN");
                                             erroresEncontrados.add(e);
                                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                             existenErroresEnArchivoOriginal = true;
                                             ++numeroErroresEnArchivoOriginal;
-                                            --cantidad;
+                                            --cantidadFin;
                                             System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
                                             System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
@@ -320,14 +425,14 @@ public class AnalizadorSintactico {
                                     //No  hay un comando FIN en la ultima instruccion, pero podri haber mas de una instruccion con el comando
                                     //Asi que verificamos la linea de cada uno
                                     if (!lineaDelComandoFin(tknActual)) {
-                                        if (cantidad > 1) {
+                                        if (cantidadFin > 1) {
                                             //Existe mas de un comando PARA => nuevo error
                                             e = new MiError(linea, " ERROR 170: solo puede existir una instruccion que comience con el comando PARA PARA");
                                             erroresEncontrados.add(e);
                                             nuevoContenido.setErroresEncontrados(erroresEncontrados);
                                             existenErroresEnArchivoOriginal = true;
                                             ++numeroErroresEnArchivoOriginal;
-                                            --cantidad;
+                                            --cantidadFin;
                                             System.out.println("parapara-AS-EXISTE MAS DE UNA INSTRUCCION CON PARA> " + e.toString());
                                             System.out.println("parapara-AS-EL NUEVO CONTENIDO DE ERRORES ENCONTRADOS ES> " + nuevoContenido.getErroresEncontrados());
                                             System.out.println("parapara-AS-EL VALOR DEL NUMERO DE ERRORES ES-> " + numeroErroresEnArchivoOriginal);
@@ -1911,9 +2016,8 @@ public class AnalizadorSintactico {
 
         List<MiError> erroresPara = new ArrayList<>();
 
-        if (!primerToken.getNombre()
-                .equals("PARA")) {
-            MiError ePara = new MiError(primerToken.getLinea(), "ERROR 140: el programa debe iniciar con el comando PARA");
+        if (!existeParaEnPosicionCorrecta) {
+            MiError ePara = new MiError(primerToken.getLinea(), " ERROR 140: el programa debe iniciar con el comando PARA");
             erroresPara.add(ePara);
             nuevoContenidoPara.setErroresEncontrados(erroresPara);
             listaContenidoFinal.add(0, nuevoContenidoPara);
@@ -1928,7 +2032,7 @@ public class AnalizadorSintactico {
             LineaContenido nuevoContenidoFin = new LineaContenido();
             Token ultimoToken = listaTokens.get(listaTokens.size() - 1);
             List<MiError> erroresFin = new ArrayList<>();
-            
+
             nuevoContenidoFin.setLinea(ultimoToken.getLinea() + 1);
             nuevoContenidoFin.setInstruccion("");
 
@@ -2229,22 +2333,7 @@ public class AnalizadorSintactico {
                 System.out.println("ccsa-AS-HAYAMOS UN ERROR3 -> " + e.toString());
                 System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
             }
-            /*
-                if (tknSigte.getLinea() == linea) {
-                    //Como existe un nuevo token en la misma linea del comando lo removemos para analizarlo
-                    tknActual = nuevaListaTokens.remove(0);
-                    //La funcion no admite argumentos, por lo tanto, sin importar el token que siga => error
-                    System.out.println("ccsa-AS-EL NUEVO TOKEN ACTUAL ES -> " + tknActual.toString());
-                    e = new MiError(linea, " Error 111: este comando no admite argumentos");
-                    erroresEncontrados.add(e);
-                    nuevoContenido.setErroresEncontrados(erroresEncontrados);
-                    this.existenErroresEnArchivoOriginal = true;
-                    ++this.numeroErroresEnArchivoOriginal;
-                    System.out.println("ccsa-AS-HAYAMOS UN ERROR3 -> " + e.toString());
-                    System.out.println("ccsa-AS-HAYAMOS UN ERROR cantidad de errores en linea de contenido> " + nuevoContenido.getErroresEncontrados());
-
-                }
-             */
+           
         }
 
         if (!existenErroresEnArchivoOriginal) {
@@ -2718,22 +2807,7 @@ public class AnalizadorSintactico {
     public boolean lineaDelComandoFin(Token tknActual) {
 
         boolean finUltimaInstruccion;
-        /*
-        int index = -1; // = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
-        Token token = new Token();
 
-        Iterator<Token> iterator = listaTokens.iterator();
-        while (iterator.hasNext()) {
-            token = (Token) iterator.next();
-            if (token.getNombre().equalsIgnoreCase("FIN")) {
-                index = listaTokens.lastIndexOf(token);
-                //break;
-            }
-        }
-         */
-        //index = listaTokens.lastIndexOf(token.getNombre().equalsIgnoreCase("FIN"));
-        //index = listaTokens.lastIndexOf(listaTokens.);
-        //Token fin = listaTokens.get(index);
         Token ultimo = listaTokens.get(listaTokens.size() - 1);
 
         //System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + index);
@@ -2842,6 +2916,46 @@ public class AnalizadorSintactico {
             }
         }
         return existePara;
+    }
+
+    public boolean existeParaComoPrimeraInstruccion() {
+
+        Token primerToken = listaTokens.get(0);
+        System.out.println("existeParaComoPrimeraInstruccion-EXISTE PARA EN LA POSICION CORRECTA-> " + primerToken.getNombre().equals("PARA"));
+        return primerToken.getNombre().equals("PARA");
+    }
+
+    public int cantidadComandosPara() {
+        int cantidad = 0;
+        Token token = new Token();
+        Iterator<Token> iterator = listaTokens.iterator();
+        while (iterator.hasNext()) {
+            token = (Token) iterator.next();
+            if (token.getNombre().equalsIgnoreCase("PARA")) {
+                ++cantidad;
+            }
+        }
+        System.out.println("existeParaComoPrimeraInstruccion-EXISTE UN TOTAL DE COMANDOS FIN IGUAL A -> " + cantidad);
+        return cantidad;
+    }
+
+    public boolean lineaDelComandoPara(Token tknActual) {
+
+        boolean paraPrimeraInstruccion;
+
+        Token primero = listaTokens.get(0);
+
+        //System.out.println("posicionComandoFin-EL VALOR DE INDEX ES-> " + index);
+        System.out.println("posicionComandoFin-EL TOKEN ACTUAL ES  -> " + tknActual.toString() + " y esta en la linea " + tknActual.getLinea());
+        System.out.println("posicionComandoFin-EL ULTIMO TOKEN ES -> " + primero.toString());
+        //Verificamos que la linea en la que esta la ultima ocurrencia de FIN es igual a la linea donde esta el ultimo token de la lista
+        //y que la posicion de ambos tokens en la linea sea la misma, de lo contrario hay argumentos en fin o hay mas tokens despues de FIN
+        paraPrimeraInstruccion = tknActual.getLinea() == primero.getLinea();
+        System.out.println("posicionComandoFin-EL VALOR DE POSICION ES-> " + paraPrimeraInstruccion);
+        //finUltimaInstruccion es true si fin esta en la ultima linea de instruccion, es decir, en la posicion correcta
+        //finUltimaInstruccion es false fin no esta en la ultima linea de instruccion, es decir, en una posicin incorrecta
+
+        return paraPrimeraInstruccion;
     }
 
     public boolean posicionComandoPara() {

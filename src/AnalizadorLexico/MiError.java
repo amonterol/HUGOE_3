@@ -99,7 +99,8 @@ public class MiError {
        " ERROR 167: la estructura del programa requiere que el comando PARA sea el comando de inicio",
        " ERROR 168: la estructura del programa debe comenzar con el comando PARA",
        " ERROR 169: el nombre del procedimiento no coincide con el nombre del archivo fuente",
-       " ERROR 170: solo puede existir una instruccion que comience con el comando FIN"
+       " ERROR 170: solo puede existir una instruccion que comience con el comando FIN",
+       " ERROR 171: solo puede existir una instruccion que comience con el comando PARA"
             
 
     };
